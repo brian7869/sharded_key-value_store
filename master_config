@@ -1,0 +1,13 @@
+{
+    "master_addr": ["localhost", 5000],
+    "shards": [
+        {
+            "leader_id": 0,
+            "replicas": [
+                ["localhost", 6000],
+                ["localhost", 6001],
+                ["localhost", 6002]
+            ]
+        }
+    ]
+}

@@ -54,8 +54,9 @@ class Paxos_server(Process):
 		
 	def run(self):
 		# 1. Create new UDP socket (receiver)
-		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		sock.bind((self.host, self.port))
+		sock.listen(5)
 
 		# 2. Create heartbeat sender and failure detector
 		heartbeat_sender_thread = threading.Thread(name="heartbeat_sender_" + str(self.replica_id),
@@ -67,7 +68,13 @@ class Paxos_server(Process):
 		
 		# 3. Start receiving message
 		while True:
-			message = sock.recv(65535)
+			conn, addr = sock.accept()
+			message = ''
+			while True:
+				data = conn.recv(4096)
+				if not data:
+					break
+				message += data
 			self.message_handler(message)
 
 	def heartbeat_sender(self):

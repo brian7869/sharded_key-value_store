@@ -21,10 +21,21 @@ class Master(Process):
 			begin = end
 
 	def run(self):
-		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		sock.bind((self.host, self.port))
+		sock.listen(5)
+		# while True:
+		# 	message = sock.recv(65535)
+		# 	self.message_handler(message)
+
 		while True:
-			message = sock.recv(65535)
+			conn, addr = sock.accept()
+			message = ''
+			while True:
+				data = conn.recv(256)
+				if not data:
+					break
+				message += data
 			self.message_handler(message)
 
 	def message_handler(self, message):
@@ -159,14 +170,21 @@ class Master(Process):
 		request = "Request {} {} {} {}".format(self.host, str(thread_port), str(new_shard_id), add_shard_command)
 		self.forward_message(old_shard_id, request)
 
-		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		sock.bind((self.host, thread_port))
+		sock.listen(5)
 		sock.settimeout(TIMEOUT)
 
 		while True:
 			try:
+				message = ''
 				start_time = time.time()
-				message = sock.recv(65535)
+				conn, addr = sock.accept()
+				while True:
+					data = sock.recv(256)
+					if not data:
+						break
+					message += data
 				elapsed = time.time() - start_time
 				# Only possible message: "Reply 0 <replica_id>"
 				type_of_message, rest_of_message = tuple(message.split(' ', 1))

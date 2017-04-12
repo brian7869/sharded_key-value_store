@@ -29,7 +29,7 @@ def within_the_range(begin, end, hash_value):
 def send_message(host, port, message):
     if message.find("Heartbeat") == -1:
         print("send {} to {}:{}".format(message, host, str(port)))
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((host, int(port)))
     sock.sendall(message)
     sock.close()

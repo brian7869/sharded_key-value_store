@@ -13,8 +13,9 @@ def run(client_id, host, port):
 	# send message format	
 	# "Request <host> <port_number> <client_seq> <command>"
 	port = int(port)
-	sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	sock.bind((host, port))
+	sock.listen(5)
 	sock.settimeout(TIMEOUT)
 	client_seq = -1
 
@@ -33,7 +34,13 @@ def run(client_id, host, port):
 				# debug_print(client_id, 'wait for message')
 				try:
 					start_time = time.time()
-					message = sock.recv(65535)
+					conn, addr = sock.accept()
+					message = ''
+					while True:
+						data = conn.recv(256)
+						if not data:
+							break
+						message += data
 					elapsed = time.time() - start_time
 					status = message_handler(message, client_seq)
 					if status == ACK:

@@ -1,5 +1,5 @@
 import json, threading, socket
-from multiprocessing import Process
+from multiprocessing import Process, Lock
 from paxos_utils import json_spaceless_dump, get_hash_value, send_message, within_the_range
 from config import *
 import time
@@ -13,7 +13,7 @@ class Master(Process):
 		self.num_shards = len(self.cfg['shards'])
 		self.key_range = []
 		self.wait_list = [[]] * self.num_shards
-		self.wait_list_lock = threading.Lock()
+		self.wait_list_lock = Lock()
 		begin = 0
 		for i in xrange(self.num_shards):
 			end = (16 ** NUM_HEXDIGITS) * (i+1) / self.num_shards
@@ -168,27 +168,27 @@ class Master(Process):
 		add_shard_command = "AddShard {} {} {}".format(str(begin), str(end), new_shard_address)
 		thread_port = self.port + new_shard_id
 		request = "Request {} {} {} {}".format(self.host, str(thread_port), str(new_shard_id), add_shard_command)
+		viewchange = "ViewChange {} {}".format(self.host, str(thread_port))
 		self.forward_message(old_shard_id, request)
+		message_sent = request
 
 		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		sock.bind((self.host, thread_port))
 		sock.listen(5)
 		sock.settimeout(TIMEOUT)
 
+		# TODO: Send viewchange upon timeout and need to handle LeaderIs message and resend requests.
 		while True:
 			try:
 				message = ''
-				start_time = time.time()
 				conn, addr = sock.accept()
 				while True:
 					data = sock.recv(256)
 					if not data:
 						break
 					message += data
-				elapsed = time.time() - start_time
-				# Only possible message: "Reply 0 <replica_id>"
+				# possible message: "Reply 0 <replica_id>"
 				type_of_message, rest_of_message = tuple(message.split(' ', 1))
-				print(message)
 				if type_of_message == "Reply":
 					client_seq, replica_id = rest_of_message.split(' ', 1)
 					self.wait_list_lock.acquire()
@@ -196,7 +196,13 @@ class Master(Process):
 					self.forward_and_empty_wait_list(new_shard_id)
 					self.wait_list_lock.release()
 					break
-				sock.settimeout(sock.gettimeout() - elapsed)
 			except socket.timeout:
-				self.forward_message(old_shard_id, request)
-				sock.settimeout(TIMEOUT)
+				if message_sent == request:
+					self.forward_message(new_shard_id, viewchange)
+					self.forward_message(old_shard_id, viewchange)
+					sock.settimeout(sock.gettimeout() * 2)
+					message_sent = viewchange
+				else:
+					self.forward_message(old_shard_id, request)
+					sock.settimeout(sock.gettimeout())
+					message_sent = request

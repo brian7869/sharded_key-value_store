@@ -17,6 +17,7 @@ def run(client_id, host, port):
 	sock.bind((host, port))
 	sock.listen(5)
 	sock.settimeout(TIMEOUT)
+	timeout = TIMEOUT
 	client_seq = -1
 
 	while True:
@@ -44,6 +45,7 @@ def run(client_id, host, port):
 					elapsed = time.time() - start_time
 					status = message_handler(message, client_seq)
 					if status == ACK:
+						timeout = TIMEOUT
 						sock.settimeout(TIMEOUT)
 						break
 					elif status == SKIP:
@@ -56,7 +58,8 @@ def run(client_id, host, port):
 				except socket.timeout:
 					# debug_print(client_id, 'send viewchange: '+str(client_seq))
 					message = "ViewChange {} {} {} {}".format(host, str(port), str(client_seq), req_message)
-					sock.settimeout(sock.gettimeout()*2)
+					timeout *= 2
+					sock.settimeout(timeout)
 					send_message(MASTER_HOST, MASTER_PORT, message)
 
 def message_handler(message, client_seq):

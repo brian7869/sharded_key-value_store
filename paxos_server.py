@@ -1,6 +1,6 @@
 import socket, threading, datetime, json, os, sys
 from paxos_utils import *
-from multiprocessing import Process
+from multiprocessing import Process, Lock
 from time import sleep
 from config import *
 
@@ -15,7 +15,6 @@ class Paxos_server(Process):
 		self.host = address_list[replica_id][0]
 		self.port = address_list[replica_id][1]
 		self.data = {}
-		self.leader_number_for_compaign = 0 - self.num_replicas + self.replica_id
 		
 		# self.chat_log_filename = 'chat_log/server_{}.chat_log'.format(str(replica_id))
 
@@ -35,7 +34,7 @@ class Paxos_server(Process):
 									#		'slot':<slot_num>
 									#	}
 									# }
-		self.client_list = []	# [<client_address>]
+		# self.client_list = []	# [<client_address>]
 		self.executed_command_slot = -1
 		self.assigned_command_slot = -1
 		self.leader_num = -1
@@ -46,8 +45,8 @@ class Paxos_server(Process):
 
 		self.replica_heartbeat = []
 		self.live_set = []
-		self.heartbeat_lock = threading.Lock()
-		self.liveset_lock = threading.Lock()
+		self.heartbeat_lock = Lock()
+		self.liveset_lock = Lock()
 		
 		for i in xrange(self.num_replicas):
 			self.replica_heartbeat.append(datetime.datetime.now())
@@ -96,7 +95,7 @@ class Paxos_server(Process):
 			self.live_set = new_live_set
 			self.liveset_lock.release()
 
-			if self.replica_id == new_live_set[0] and \
+			if self.replica_id == new_live_set[0] and self.num_followers == 0 and \
 				( (self.leader_num % self.num_replicas) not in new_live_set or self.leader_num == -1 ):
 				self.runForLeader()
 				
@@ -239,8 +238,8 @@ class Paxos_server(Process):
 			if self.isLeader():
 				request = self.parse_request(message)
 				client_address = self.get_client_address(request)
-				if client_address not in self.client_list:
-					self.client_list.append(client_address)
+				# if client_address not in self.client_list:
+				# 	self.client_list.append(client_address)
 
 				# self.debug_print('leader processing client request')
 				# self.debug_print(str(client_address in self.client_progress))
@@ -274,10 +273,10 @@ class Paxos_server(Process):
 					send_message(self.address_list[leader_id][0], self.address_list[leader_id][1], message)
 
 		elif type_of_message == 'ViewChange':
-			host, port, client_seq = tuple(rest_of_message.split(' ', 2))
+			host, port = tuple(rest_of_message.split(' ', 1))
 			client_address = host+':'+port
-			if client_address not in self.client_list:
-				self.client_list.append(client_address)
+			# if client_address not in self.client_list:
+			# 	self.client_list.append(client_address)
 			self.liveset_lock.acquire()
 			new_live_set = self.live_set
 			self.liveset_lock.release()
@@ -348,7 +347,7 @@ class Paxos_server(Process):
 	        	assert False and 'Reach divergent state'
 	        self.accepted[self.executed_command_slot]['result'] = result
 	        message = "Reply {} {}".format(self.accepted[self.executed_command_slot]['client_seq'], str(result))
-	        if client_addr[0] == '-1' and self.accepted[self.executed_command_slot]['command'].find('AddShard') != -1:
+	        if client_addr[0] == '-1' or self.accepted[self.executed_command_slot]['command'].find('AddShard') != -1:
 	            continue
 	        send_message(client_addr[0], client_addr[1], message)
 
@@ -405,10 +404,9 @@ class Paxos_server(Process):
 	################# Here are helper functions for view change #################
 	def runForLeader(self):
 		self.num_followers = 1
-		new_leader_num = max(self.replica_id + (self.leader_num - (self.leader_num % self.num_replicas)), self.leader_number_for_compaign + self.num_replicas) 
+		new_leader_num = self.replica_id + (self.leader_num - (self.leader_num % self.num_replicas))
 		if new_leader_num <= self.leader_num:
 			new_leader_num += self.num_replicas
-		self.leader_number_for_compaign = new_leader_num
 		message = "IAmLeader {}".format(str(new_leader_num))
 		# self.debug_print("Make America Great Again!!!")
 		self.broadcast(message)

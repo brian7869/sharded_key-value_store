@@ -57,7 +57,7 @@ def run(client_id, host, port):
 						# sock.settimeout(TIMEOUT)
 				except socket.timeout:
 					# debug_print(client_id, 'send viewchange: '+str(client_seq))
-					message = "ViewChange {} {} {} {}".format(host, str(port), str(client_seq), req_message)
+					message = "ViewChange {}".format(req_message)
 					timeout *= 2
 					sock.settimeout(timeout)
 					send_message(MASTER_HOST, MASTER_PORT, message)

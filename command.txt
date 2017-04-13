@@ -1,0 +1,2 @@
+AddShard shard1_cfg
+AddShard shard2_cfg

@@ -64,20 +64,21 @@ class Master(Process):
 				self.wait_list_lock.release()
 
 		elif type_of_message == "ViewChange":
-			request_componenets = rest_of_message.split(' ', 3)
-			command = request_componenets[3]
+			request_componenets = rest_of_message.split(' ', 4)
+			command = request_componenets[4]
 			key = command.split(' ')[1]
 			hash_value = get_hash_value(key)
+			print("key: {}, hash_value: {}".format(key, str(hash_value)))
 			shard_id = self.get_responsible_shard(hash_value)
 			if shard_id != -1:
 				# Thinking about how it would influence the inner data structure of this shard and
 				# Waht if there are multiple ViewChange?
 				self.wait_list_lock.acquire()
 				if self.cfg["shards"][shard_id]["status"] == NEW:
-					self.wait_list[shard_id].append(command)
+					self.wait_list[shard_id].append(rest_of_message)
 				else:
-					viewchange_message = "ViewChange {} {} {}".format(request_componenets[0], request_componenets[1], request_componenets[2])
-					self.wait_list[shard_id].append(command)
+					viewchange_message = "ViewChange {} {} {}".format(request_componenets[1], request_componenets[2], request_componenets[3])
+					self.wait_list[shard_id].append(rest_of_message)
 					self.broadcast_message(shard_id, viewchange_message)
 				self.wait_list_lock.release()
 
@@ -183,7 +184,7 @@ class Master(Process):
 				message = ''
 				conn, addr = sock.accept()
 				while True:
-					data = sock.recv(256)
+					data = conn.recv(256)
 					if not data:
 						break
 					message += data

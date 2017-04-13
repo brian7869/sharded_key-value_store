@@ -144,12 +144,14 @@ class Paxos_server(Process):
 						self.accepted[slot] = inner_dict
 						if inner_dict['client_address'] not in self.client_progress or inner_dict['client_seq'] > self.client_progress[inner_dict['client_address']]['client_seq']:
 							self.client_progress[inner_dict['client_address']] = {'client_seq': inner_dict['client_seq'], 'slot': slot}
-						if inner_dict['result'] is not None:
-							self.decide_value(slot)
+						# if inner_dict['result'] is not None:
+						# 	self.decide_value(slot)
 					elif inner_dict['leader_num'] == self.accepted[slot]['leader_num']:
 						if self.accepted[slot]['client_address'] == inner_dict['client_address']\
 							and self.accepted[slot]['client_seq'] == inner_dict['client_seq']:
 							self.accepted[slot]['accepted_replicas'].update(inner_dict['accepted_replicas'])
+							if len(self.accepted[slot]['accepted_replicas']) >= MAX_FAILURE + 1:
+								self.decide_value(slot)
 						else:
 							assert False and 'Different values proposed in the same slot by the same leader'
 				if self.num_followers >= MAX_FAILURE + 1:

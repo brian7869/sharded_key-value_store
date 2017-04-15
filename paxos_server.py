@@ -6,7 +6,7 @@ from config import *
 
 class Paxos_server(Process):
 	def __init__(self, shard_id, replica_id, address_list, skipped_slots, fail_view_change = 0):
-		super(Paxos_server, self).__init__()
+		# super(Paxos_server, self).__init__()
 		# 0. Initialize internal data
 		self.num_replicas = 2 * MAX_FAILURE + 1
 		self.shard_id = shard_id
@@ -251,7 +251,8 @@ class Paxos_server(Process):
 					and self.client_progress[client_address]['client_seq'] >= request['client_seq']:
 					if self.client_progress[client_address]['client_seq'] == request['client_seq']:
 						allocated_slot = self.client_progress[client_address]['slot']
-						if self.accepted[allocated_slot]['result'] is not None:
+						result = self.accepted[allocated_slot]['result']
+						if result is not None and result is not False:
 							if self.accepted[allocated_slot]['command'].find('AddShard') != -1:
 								type_of_command, begin, end, new_shard_address = tuple(self.accepted[allocated_slot]['command'].split(' ', 3))
 								data_to_transfer_json = self.accepted[allocated_slot]['result']
@@ -450,3 +451,18 @@ class Paxos_server(Process):
 	def debug_print(self, msg):
 		print str(self.replica_id) + ': '+msg
 	################# End of helper function for debugging  #################
+
+
+if __name__ == '__main__':
+	shard_id = int(sys.argv[1])
+	replica_id = int(sys.argv[2])
+	shard_config = open(sys.argv[3], 'r')
+	address_list = json.load(shard_config)
+	shard_config.close()
+	skipped_slots = sys.argv[4].split(',')
+	for i in xrange(len(skipped_slots)):
+		skipped_slots[i] = int(skipped_slots[i])
+	fail_view_change = int(sys.argv[5])
+
+	server = Paxos_server(shard_id, replica_id, address_list, skipped_slots, fail_view_change)
+	server.run()

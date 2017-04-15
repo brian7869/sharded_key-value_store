@@ -1,12 +1,12 @@
-import json, threading, socket
+import json, threading, socket, sys
 from multiprocessing import Process, Lock
 from paxos_utils import json_spaceless_dump, get_hash_value, send_message, within_the_range
 from config import *
 import time
 
-class Master(Process):
+class Master:
 	def __init__(self, master_config_file):
-		super(Master, self).__init__()
+		# super(Master, self).__init__()
 		self.load_config(master_config_file)
 		self.host = self.cfg['master_addr'][0]
 		self.port = self.cfg['master_addr'][1]
@@ -207,3 +207,8 @@ class Master(Process):
 					self.forward_message(old_shard_id, request)
 					sock.settimeout(sock.gettimeout())
 					message_sent = request
+
+if __name__ == '__main__':
+	master_config_file = sys.argv[1]
+	master = Master(master_config_file)
+	master.run()

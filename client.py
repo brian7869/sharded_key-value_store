@@ -1,13 +1,14 @@
 from multiprocessing import Process
-import socket, sys
-from random import random
-from config import *
+import socket, sys, random, time
+from config import MASTER_HOST, MASTER_PORT, TIMEOUT, CLIENT_ADDR
 from paxos_utils import send_message
-import time
 
 ACK = 1
 SKIP = 2
-# VIEWCHG = 3
+SEED = int(time.time())
+print 'SEED is {}'.format(SEED)
+random.seed(SEED)
+
 # send request to known leader, if timeout, ask all replicas WhoIsLeader and pick one with f+1
 def run(client_id, host, port):
 	# send message format	
@@ -26,11 +27,11 @@ def run(client_id, host, port):
 		user_input = raw_input("Type in request: (1) Get <key> (2) Put <key> <value> (3) Delete <key> (4) AddShard <configFileName>\n")
 		request = user_input.rstrip()
 		if request.find("AddShard") != -1:
-			send_message(MASTER_HOST, MASTER_PORT, request)
+			send_message(MASTER_HOST, MASTER_PORT, request, random)
 		else:
 			req_message = "Request {} {} {} {}".format(host, str(port)
 						, str(client_seq), request)
-			send_message(MASTER_HOST, MASTER_PORT, req_message)
+			send_message(MASTER_HOST, MASTER_PORT, req_message, random)
 			while True:
 				# debug_print(client_id, 'wait for message')
 				try:
@@ -57,10 +58,10 @@ def run(client_id, host, port):
 						# sock.settimeout(TIMEOUT)
 				except socket.timeout:
 					# debug_print(client_id, 'send viewchange: '+str(client_seq))
-					message = "ViewChange {}".format(req_message)
+					message = "ViewChange {} {} {} {}".format(host, str(port), str(client_seq), req_message)
 					timeout *= 2
 					sock.settimeout(timeout)
-					send_message(MASTER_HOST, MASTER_PORT, message)
+					send_message(MASTER_HOST, MASTER_PORT, message, random)
 
 def message_handler(message, client_seq):
 	# Possible messages

@@ -1,8 +1,11 @@
-import socket, threading, datetime, json, os, sys
+import socket, threading, datetime, json, os, sys, random, time
 from paxos_utils import *
 from multiprocessing import Process, Lock
-from time import sleep
-from config import *
+from config import MASTER_HOST, MASTER_PORT, MAX_FAILURE, HEARTBEART_CYCLE, TIMEOUT
+
+SEED = int(time.time())
+print 'SEED is {}'.format(SEED)
+random.seed(SEED)
 
 class Paxos_server(Process):
 	def __init__(self, shard_id, replica_id, address_list, skipped_slots, fail_view_change = 0):
@@ -88,7 +91,7 @@ class Paxos_server(Process):
 		heartbeat_message = "Heartbeat {}".format(str(self.replica_id))
 		while True:
 			self.broadcast(heartbeat_message)
-			sleep(HEARTBEART_CYCLE)
+			time.sleep(HEARTBEART_CYCLE)
 
 	def failure_detector(self):
 		while True:
@@ -107,7 +110,7 @@ class Paxos_server(Process):
 				( (self.leader_num % self.num_replicas) not in new_live_set or self.leader_num == -1 ):
 				self.runForLeader()
 				
-			sleep(TIMEOUT)
+			time.sleep(TIMEOUT)
 
 	def message_handler(self, message):
 		# Possible messages
@@ -136,7 +139,7 @@ class Paxos_server(Process):
 				leader_id = new_leader_num % self.num_replicas
 				response = "YouAreLeader {} {}".format(str(new_leader_num)
 					, json_spaceless_dump(self.accepted))
-				send_message(self.address_list[leader_id][0], self.address_list[leader_id][1], response)
+				send_message(self.address_list[leader_id][0], self.address_list[leader_id][1], response, random)
 				self.leader_num = new_leader_num
 
 		elif type_of_message == "YouAreLeader":
@@ -165,7 +168,7 @@ class Paxos_server(Process):
 				if self.num_followers >= MAX_FAILURE + 1:
 					self.leader_num = int(new_leader_num)
 					msg = "LeaderIs {} {}".format(str(self.shard_id), str(self.replica_id))
-					send_message(MASTER_HOST, MASTER_PORT, msg)
+					send_message(MASTER_HOST, MASTER_PORT, msg, random)
 					self.repropose_undecided_value()
 					### FOR TESTING ###
 					if self.fail_view_change:
@@ -267,7 +270,7 @@ class Paxos_server(Process):
 								self.transfer_data(request['host'], request['port'], new_shard_address, data_to_transfer_json)
 							else:
 								message = "Reply {} {}".format(request['client_seq'], str(self.accepted[allocated_slot]['result']))
-								send_message(request['host'], request['port'], message)
+								send_message(request['host'], request['port'], message, random)
 						else:
 							# self.debug_print("Repropose request {}".format(message))
 							self.propose(allocated_slot, message)
@@ -281,7 +284,7 @@ class Paxos_server(Process):
 			else:	# forward message to current leader
 				if self.leader_num != -1:
 					leader_id = self.leader_num % self.num_replicas
-					send_message(self.address_list[leader_id][0], self.address_list[leader_id][1], message)
+					send_message(self.address_list[leader_id][0], self.address_list[leader_id][1], message, random)
 
 		elif type_of_message == 'ViewChange':
 			host, port = tuple(rest_of_message.split(' ', 1))
@@ -302,13 +305,7 @@ class Paxos_server(Process):
 		# 	self.debug_print("=== sending message : {} ===".format(message))
 		for i in xrange(self.num_replicas):
 			if i != self.replica_id:
-				send_message(self.address_list[i][0], self.address_list[i][1], message)
-
-	def broadcast_client(self, msg):
-		# self.debug_print(" sending message: " + msg)
-		for client_addr in self.client_list:
-			client_host, client_port = client_addr.split(':')
-			send_message(client_host, client_port, msg)
+				send_message(self.address_list[i][0], self.address_list[i][1], message, random)
 
 	def propose(self, seq, request):
 		propose_message = "Propose {} {} {}".format(str(self.leader_num), str(seq), request)
@@ -354,18 +351,18 @@ class Paxos_server(Process):
 	        self.executed_command_slot += 1
 	        client_addr = self.accepted[self.executed_command_slot]['client_address'].split(':')
 	        result = self.run_command(client_addr[0], client_addr[1], self.accepted[self.executed_command_slot]['command'])
+	        with open('log/shard{}_replica{}.log'.format(self.shard_id, self.replica_id), 'a') as log_f:
+				log_f.write('{}\n\t{}\n'.format(self.accepted[self.executed_command_slot]['command'], result))
 	        if self.accepted[self.executed_command_slot]['result'] is not False and self.accepted[self.executed_command_slot] != result:
 	        	assert False and 'Reach divergent state'
 	        self.accepted[self.executed_command_slot]['result'] = result
 	        message = "Reply {} {}".format(self.accepted[self.executed_command_slot]['client_seq'], str(result))
 	        if client_addr[0] == '-1' or self.accepted[self.executed_command_slot]['command'].find('AddShard') != -1:
 	            continue
-	        send_message(client_addr[0], client_addr[1], message)
+	        send_message(client_addr[0], client_addr[1], message, random)
 
 	def run_command(self, host, port, command):
 		print("Execute {}".format(command))
-		with open('log/shard{}_replica{}.log'.format(self.shard_id, self.replica_id), 'a') as log_f:
-			log_f.write(command+'\n')
 		if command == "NOOP":
 			return 0
 		type_of_command, rest_of_command = tuple(command.split(' ', 1))
@@ -410,7 +407,7 @@ class Paxos_server(Process):
 		init_data_message = "Request {} {} 0 InitData {}".format(master_host, master_port, data_to_transfer_json)
 
 		for addr in dest_addr_list:
-			send_message(addr[0], addr[1], init_data_message)
+			send_message(addr[0], addr[1], init_data_message, random)
 
 	################# End of helper functions for learner #################
 

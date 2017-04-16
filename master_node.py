@@ -1,8 +1,14 @@
-import json, threading, socket, sys
+import json, threading, socket, sys, random, time
 from multiprocessing import Process, Lock
 from paxos_utils import json_spaceless_dump, get_hash_value, send_message, within_the_range
-from config import *
-import time
+from config import NUM_HEXDIGITS
+
+NEW = 1
+READY = 0
+
+SEED = int(time.time())
+print 'SEED is {}'.format(SEED)
+random.seed(SEED)
 
 class Master:
 	def __init__(self, master_config_file):
@@ -57,7 +63,7 @@ class Master:
 			shard_id = self.get_responsible_shard(hash_value)
 			if shard_id != -1:
 				self.wait_list_lock.acquire()
-				if len(self.wait_list[shard_id]) > 0:
+				if len(self.wait_list[shard_id]) > 0 or self.cfg["shards"][shard_id]["status"] == NEW:
 					self.wait_list[shard_id].append(message)
 				else:
 					self.forward_message(shard_id, message)
@@ -134,7 +140,7 @@ class Master:
 		leader_id = self.cfg["shards"][shard_id]["leader_id"]
 		host = self.cfg["shards"][shard_id]["replicas"][leader_id][0]
 		port = self.cfg["shards"][shard_id]["replicas"][leader_id][1]
-		send_message(host, port, message)
+		send_message(host, port, message, random)
 
 	def broadcast_message(self, shard_id, message):
 		for i in xrange(len(self.cfg["shards"][shard_id]["replicas"])):
@@ -171,7 +177,12 @@ class Master:
 		thread_port = self.port + new_shard_id
 		request = "Request {} {} {} {}".format(self.host, str(thread_port), str(new_shard_id), add_shard_command)
 		viewchange = "ViewChange {} {}".format(self.host, str(thread_port))
-		self.forward_message(old_shard_id, request)
+		self.wait_list_lock.acquire()
+		if len(self.wait_list[old_shard_id]) > 0 or self.cfg["shards"][old_shard_id]["status"] == NEW:
+			self.wait_list[old_shard_id].append(request)
+		else:
+			self.forward_message(old_shard_id, request)
+		self.wait_list_lock.release()
 		message_sent = request
 
 		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -205,7 +216,13 @@ class Master:
 					sock.settimeout(sock.gettimeout() * 2)
 					message_sent = viewchange
 				else:
-					self.forward_message(old_shard_id, request)
+					self.wait_list_lock.acquire()
+					if len(self.wait_list[old_shard_id]) > 0 or self.cfg["shards"][old_shard_id]["status"] == NEW:
+						self.wait_list[old_shard_id].append(request)
+					else:
+						self.forward_message(old_shard_id, request)
+					self.wait_list_lock.release()
+					
 					sock.settimeout(sock.gettimeout())
 					message_sent = request
 

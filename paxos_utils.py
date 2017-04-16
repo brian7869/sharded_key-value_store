@@ -1,5 +1,5 @@
-import json, pickle, hashlib, socket
-from config import *
+import json, pickle, hashlib, socket, time
+from config import HASH_FUNC, NUM_HEXDIGITS, THRESHOLD
 
 class PythonObjectEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -26,16 +26,16 @@ def get_hash_value(key):
 def within_the_range(begin, end, hash_value):
     return hash_value >= begin and hash_value < end
 
-def send_message(host, port, message):
+def send_message(host, port, message, random):
     if message.find("Heartbeat") == -1:
-        print "send '{}' to {}:{}".format(message, host, str(port))
-        # decision = raw_input("send '{}' to {}:{}...? (y/n)".format(message, host, str(port)))
-        # if decision == 'n':
-        #     return
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:
-        sock.connect((host, int(port)))
-        sock.sendall(message)
-        sock.close()
-    except Exception:
-        pass
+        if random.random > THRESHOLD:
+            print "send '{}' to {}:{}".format(message, host, str(port))
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            try:
+                sock.connect((host, int(port)))
+                sock.sendall(message)
+                sock.close()
+            except Exception:
+                pass
+        else:
+            print "drop '{}' to {}:{}".format(message, host, str(port))

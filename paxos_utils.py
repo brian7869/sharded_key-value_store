@@ -28,9 +28,10 @@ def within_the_range(begin, end, hash_value):
 
 def send_message(host, port, message):
     if message.find("Heartbeat") == -1:
-        decision = raw_input("send '{}'' to {}:{}...? (y/n)".format(message, host, str(port)))
-        if decision == 'n':
-            return
+        print "send '{}' to {}:{}".format(message, host, str(port))
+        # decision = raw_input("send '{}' to {}:{}...? (y/n)".format(message, host, str(port)))
+        # if decision == 'n':
+        #     return
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         sock.connect((host, int(port)))

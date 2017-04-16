@@ -77,7 +77,7 @@ class Master:
 				if self.cfg["shards"][shard_id]["status"] == NEW:
 					self.wait_list[shard_id].append(rest_of_message)
 				else:
-					viewchange_message = "ViewChange {} {} {}".format(request_componenets[1], request_componenets[2], request_componenets[3])
+					viewchange_message = "ViewChange {} {}".format(request_componenets[1], request_componenets[2])
 					self.wait_list[shard_id].append(rest_of_message)
 					self.broadcast_message(shard_id, viewchange_message)
 				self.wait_list_lock.release()
@@ -85,11 +85,12 @@ class Master:
 		elif type_of_message == "LeaderIs":
 			shard_id, leader_id = tuple(rest_of_message.split(' ', 2))
 			shard_id, leader_id = int(shard_id), int(leader_id)
-			self.cfg["shards"][shard_id]["leader_id"] = leader_id
-			self.wait_list_lock.acquire()
-			if self.cfg["shards"][shard_id]["status"] != NEW:
-				self.forward_and_empty_wait_list(shard_id)
-			self.wait_list_lock.release()
+			if shard_id < len(self.cfg["shards"]):
+				self.cfg["shards"][shard_id]["leader_id"] = leader_id
+				self.wait_list_lock.acquire()
+				if self.cfg["shards"][shard_id]["status"] != NEW:
+					self.forward_and_empty_wait_list(shard_id)
+				self.wait_list_lock.release()
 
 		# TODO: To seek a better way to send AddShard request
 		elif type_of_message == "AddShard":

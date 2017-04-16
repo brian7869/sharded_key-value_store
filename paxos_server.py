@@ -47,6 +47,9 @@ class Paxos_server(Process):
 		self.live_set = []
 		self.heartbeat_lock = Lock()
 		self.liveset_lock = Lock()
+
+		if not os.path.isdir('log'):
+			os.makedirs('log')
 		
 		for i in xrange(self.num_replicas):
 			self.replica_heartbeat.append(datetime.datetime.now())
@@ -62,10 +65,14 @@ class Paxos_server(Process):
 												   target=self.heartbeat_sender, args=())
 		failure_detector_thread = threading.Thread(name="failure_detector_" + str(self.replica_id),
 												   target=self.failure_detector, args=())
+		
+		heartbeat_sender_thread.daemon = True
+		failure_detector_thread.daemon = True
 		heartbeat_sender_thread.start()
 		failure_detector_thread.start()
 		
 		# 3. Start receiving message
+		
 		while True:
 			conn, addr = sock.accept()
 			message = ''
@@ -75,6 +82,7 @@ class Paxos_server(Process):
 					break
 				message += data
 			self.message_handler(message)
+		
 
 	def heartbeat_sender(self):
 		heartbeat_message = "Heartbeat {}".format(str(self.replica_id))
@@ -111,7 +119,7 @@ class Paxos_server(Process):
 		# 4. "Accept <sender_id> <leader_num> <sequence_num> <Request_message>"
 		# From clients:
 		# 1. "Request <host> <port> <client_seq> <command>"
-		# 2. "ViewChange <host> <port> <client_seq>"
+		# 2. "ViewChange <host> <port>"
 		type_of_message, rest_of_message = tuple(message.split(' ', 1))
 
 		if type_of_message != "Heartbeat":
@@ -356,6 +364,8 @@ class Paxos_server(Process):
 
 	def run_command(self, host, port, command):
 		print("Execute {}".format(command))
+		with open('log/shard{}_replica{}.log'.format(self.shard_id, self.replica_id), 'a') as log_f:
+			log_f.write(command+'\n')
 		if command == "NOOP":
 			return 0
 		type_of_command, rest_of_command = tuple(command.split(' ', 1))

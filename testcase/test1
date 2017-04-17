@@ -1,9 +1,0 @@
-Get 1
-Put 1 123
-Put 2 234
-Put 6 678
-Put 7 789
-AddShard shard1_cfg
-Get 6
-Put 6 680
-Get 6

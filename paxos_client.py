@@ -1,7 +1,7 @@
 from multiprocessing import Process
 import socket, sys, random, time
 from config import MASTER_HOST, MASTER_PORT, TIMEOUT, CLIENT_ADDR
-from paxos_utils import send_message
+from paxos_utils import send_message, send_message_without_failure
 
 ACK = 1
 SKIP = 2
@@ -27,11 +27,11 @@ def run(client_id, host, port):
 		user_input = raw_input("Type in request: (1) Get <key> (2) Put <key> <value> (3) Delete <key> (4) AddShard <configFileName>\n")
 		request = user_input.rstrip()
 		if request.find("AddShard") != -1:
-			send_message(MASTER_HOST, MASTER_PORT, request, random)
+			send_message_without_failure(MASTER_HOST, MASTER_PORT, request)
 		else:
 			req_message = "Request {} {} {} {}".format(host, str(port)
 						, str(client_seq), request)
-			send_message(MASTER_HOST, MASTER_PORT, req_message, random)
+			send_message_without_failure(MASTER_HOST, MASTER_PORT, req_message)
 			while True:
 				# debug_print(client_id, 'wait for message')
 				try:
@@ -50,7 +50,7 @@ def run(client_id, host, port):
 						sock.settimeout(TIMEOUT)
 						break
 					elif status == SKIP:
-						sock.settimeout(sock.gettimeout() - elapsed)
+						sock.settimeout(max(sock.gettimeout() - elapsed, 0.01))
 					else:
 						assert False and 'Unknown message'
 						# debug_print(client_id, 'resend request: '+self.commands[client_seq])
@@ -58,10 +58,10 @@ def run(client_id, host, port):
 						# sock.settimeout(TIMEOUT)
 				except socket.timeout:
 					# debug_print(client_id, 'send viewchange: '+str(client_seq))
-					message = "ViewChange {} {} {} {}".format(host, str(port), str(client_seq), req_message)
+					message = "ViewChange {}".format(req_message)
 					timeout *= 2
 					sock.settimeout(timeout)
-					send_message(MASTER_HOST, MASTER_PORT, message, random)
+					send_message_without_failure(MASTER_HOST, MASTER_PORT, message)
 
 def message_handler(message, client_seq):
 	# Possible messages

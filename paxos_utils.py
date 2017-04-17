@@ -27,15 +27,31 @@ def within_the_range(begin, end, hash_value):
     return hash_value >= begin and hash_value < end
 
 def send_message(host, port, message, random):
-    if message.find("Heartbeat") == -1:
-        if random.random > THRESHOLD:
-            print "send '{}' to {}:{}".format(message, host, str(port))
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            try:
-                sock.connect((host, int(port)))
-                sock.sendall(message)
-                sock.close()
-            except Exception:
-                pass
+    if message.find("Heartbeat") != -1 or random.random() > THRESHOLD:
+        if message.find("Heartbeat") == -1:
+            if message.find("YouAreLeader") != -1: 
+                print "send '{}' to {}:{}".format(message[:message.find('{')], host, str(port))
+            else:
+                print "send '{}' to {}:{}".format(message, host, str(port))
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            sock.connect((host, int(port)))
+            sock.sendall(message)
+            sock.close()
+        except Exception:
+            pass
+    else:
+        if message.find("YouAreLeader") != -1: 
+            print "drop '{}' to {}:{}".format(message[:message.find('{')], host, str(port))
         else:
             print "drop '{}' to {}:{}".format(message, host, str(port))
+
+def send_message_without_failure(host, port, message):
+    print "send '{}' to {}:{}".format(message, host, str(port))
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        sock.connect((host, int(port)))
+        sock.sendall(message)
+        sock.close()
+    except Exception:
+        pass

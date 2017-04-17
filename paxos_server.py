@@ -18,6 +18,8 @@ class Paxos_server(Process):
 		self.host = address_list[replica_id][0]
 		self.port = address_list[replica_id][1]
 		self.data = {}
+		self.last_leader_num_for_campaign = self.replica_id - self.num_replicas
+		self.log_name = 'log/shard{}_replica{}.log'.format(self.shard_id, self.replica_id)
 		
 		# self.chat_log_filename = 'chat_log/server_{}.chat_log'.format(str(replica_id))
 
@@ -53,6 +55,8 @@ class Paxos_server(Process):
 
 		if not os.path.isdir('log'):
 			os.makedirs('log')
+		if os.path.exists(self.log_name):
+			os.remove(self.log_name)
 		
 		for i in xrange(self.num_replicas):
 			self.replica_heartbeat.append(datetime.datetime.now())
@@ -126,7 +130,10 @@ class Paxos_server(Process):
 		type_of_message, rest_of_message = tuple(message.split(' ', 1))
 
 		if type_of_message != "Heartbeat":
-			self.debug_print(" *** recieving message: {} ***".format(message))
+			if type_of_message == "YouAreLeader":	
+				self.debug_print(" *** receiving message: {} ***".format(message[:message.find('{')]))
+			else:
+				self.debug_print(" *** receiving message: {} ***".format(message))
 		if type_of_message == "Heartbeat":
 			sender_id = int(rest_of_message)
 			self.heartbeat_lock.acquire()
@@ -155,8 +162,6 @@ class Paxos_server(Process):
 						self.accepted[slot] = inner_dict
 						if inner_dict['client_address'] not in self.client_progress or inner_dict['client_seq'] > self.client_progress[inner_dict['client_address']]['client_seq']:
 							self.client_progress[inner_dict['client_address']] = {'client_seq': inner_dict['client_seq'], 'slot': slot}
-						# if inner_dict['result'] is not None:
-						# 	self.decide_value(slot)
 					elif inner_dict['leader_num'] == self.accepted[slot]['leader_num']:
 						if self.accepted[slot]['client_address'] == inner_dict['client_address']\
 							and self.accepted[slot]['client_seq'] == inner_dict['client_seq']:
@@ -187,6 +192,8 @@ class Paxos_server(Process):
 			if leader_num >= self.leader_num and (client_address not in self.client_progress or request['client_seq'] >= self.client_progress[client_address]['client_seq']):
 				self.leader_num = leader_num
 
+				self.accept(self.replica_id, slot, request_message)
+
 				if client_address in self.client_progress\
 					and request['client_seq'] > self.client_progress[client_address]['client_seq']\
 					and self.accepted[self.client_progress[client_address]['slot']]['result'] is None:
@@ -208,8 +215,6 @@ class Paxos_server(Process):
 				if len(self.accepted[slot]['accepted_replicas']) >= MAX_FAILURE + 1\
 					and self.accepted[slot]['result'] is None:
 					self.decide_value(slot)
-
-				self.accept(self.replica_id, slot, request_message)
 
 		elif type_of_message == "Accept":
 			# if self.isLeader():
@@ -341,7 +346,7 @@ class Paxos_server(Process):
 
 	################# Here are helper functions for learner #################
 	def decide_value(self, slot):
-		print("Decide slot {}".format(str(slot)))
+		# print("Decide slot {}".format(str(slot)))
 		if self.accepted[slot]['result'] is None:
 			self.accepted[slot]['result'] = False
 		self.execute()
@@ -353,7 +358,8 @@ class Paxos_server(Process):
 	        result = self.run_command(client_addr[0], client_addr[1], self.accepted[self.executed_command_slot]['command'])
 	        with open('log/shard{}_replica{}.log'.format(self.shard_id, self.replica_id), 'a') as log_f:
 				log_f.write('{}\n\t{}\n'.format(self.accepted[self.executed_command_slot]['command'], result))
-	        if self.accepted[self.executed_command_slot]['result'] is not False and self.accepted[self.executed_command_slot] != result:
+	        if self.accepted[self.executed_command_slot]['result'] is not False and self.accepted[self.executed_command_slot]['result'] != result:
+	        	print self.accepted[self.executed_command_slot]['result'], result
 	        	assert False and 'Reach divergent state'
 	        self.accepted[self.executed_command_slot]['result'] = result
 	        message = "Reply {} {}".format(self.accepted[self.executed_command_slot]['client_seq'], str(result))
@@ -390,7 +396,7 @@ class Paxos_server(Process):
 			return data_to_transfer_json
 		elif type_of_command == "InitData":
 			self.data = json.loads(rest_of_command)
-			return self.replica_id
+			return self.shard_id
 		else:
 			assert False and 'No such command'
 
@@ -414,9 +420,10 @@ class Paxos_server(Process):
 	################# Here are helper functions for view change #################
 	def runForLeader(self):
 		self.num_followers = 1
-		new_leader_num = self.replica_id + (self.leader_num - (self.leader_num % self.num_replicas))
+		new_leader_num = max(self.replica_id + (self.leader_num - (self.leader_num % self.num_replicas)), self.last_leader_num_for_campaign + self.num_replicas)
 		if new_leader_num <= self.leader_num:
 			new_leader_num += self.num_replicas
+		self.last_leader_num_for_campaign = new_leader_num
 		message = "IAmLeader {}".format(str(new_leader_num))
 		# self.debug_print("Make America Great Again!!!")
 		self.broadcast(message)

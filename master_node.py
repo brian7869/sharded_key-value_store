@@ -1,7 +1,7 @@
 import json, threading, socket, sys, random, time
 from multiprocessing import Process, Lock
 from paxos_utils import json_spaceless_dump, get_hash_value, send_message, within_the_range
-from config import NUM_HEXDIGITS
+from config import NUM_HEXDIGITS, TIMEOUT
 
 NEW = 1
 READY = 0
@@ -146,7 +146,7 @@ class Master:
 		for i in xrange(len(self.cfg["shards"][shard_id]["replicas"])):
 			host = self.cfg["shards"][shard_id]["replicas"][i][0]
 			port = self.cfg["shards"][shard_id]["replicas"][i][1]
-			send_message(host, port, message)
+			send_message(host, port, message, random)
 
 	def forward_and_empty_wait_list(self, shard_id):
 		for i in xrange(len(self.wait_list[shard_id])):
@@ -225,6 +225,7 @@ class Master:
 					
 					sock.settimeout(sock.gettimeout())
 					message_sent = request
+		print("-------- AddShard {} complete --------".format(new_shard_id))
 
 if __name__ == '__main__':
 	master_config_file = sys.argv[1]

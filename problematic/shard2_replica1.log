@@ -1,0 +1,31 @@
+InitData {"10":"0_4","12":"0_5","15":"0_7","14":"0_6","8":"0_3"}	result: 2
+Get 11 1_0	result: No such key
+Get 15 0_8	result: 0_7
+Get 8 0_12	result: 0_3
+Get 8 1_4	result: 0_3
+Get 10 0_13	result: 0_4
+Get 10 1_5	result: 0_4
+Get 12 0_14	result: 0_5
+Get 14 0_15	result: 0_6
+Get 12 1_6	result: 0_5
+Get 14 1_7	result: 0_6
+Put 8 0_19	result: 0
+Put 10 0_20	result: 0
+Put 12 0_21	result: 0
+Put 14 0_22	result: 0
+Put 15 0_23	result: 0
+Put 8 1_11	result: 0
+Put 10 1_12	result: 0
+Put 12 1_13	result: 0
+Get 8 0_27	result: 1_11
+Put 14 1_14	result: 0
+Get 10 0_28	result: 1_12
+Put 15 1_15	result: 0
+Get 12 0_29	result: 1_13
+Get 14 0_30	result: 1_14
+Get 8 1_19	result: 1_11
+Get 15 0_31	result: 1_15
+Get 10 1_20	result: 1_12
+Get 12 1_21	result: 1_13
+Get 14 1_22	result: 1_14
+Get 15 1_23	result: 1_15

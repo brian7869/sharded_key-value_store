@@ -157,7 +157,7 @@ class Master:
 		shard_id = -1
 		largest_range = -1
 		for i in xrange(self.num_shards):
-			if self.key_range[i][1] - self.key_range[i][0] > largest_range:
+			if self.key_range[i][1] - self.key_range[i][0] >= largest_range:
 				shard_id = i
 				largest_range = self.key_range[i][1] - self.key_range[i][0]
 		return shard_id

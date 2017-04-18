@@ -1,0 +1,339 @@
+SEED is 1492484049
+2:  *** receiving message: IAmLeader 3 ***
+send 'YouAreLeader 3 ' to localhost:16020
+2:  *** receiving message: Request localhost 4002 0 InitData {"10":"0_4","12":"0_5","15":"0_7","14":"0_6","8":"0_3"} ***
+send 'Request localhost 4002 0 InitData {"10":"0_4","12":"0_5","15":"0_7","14":"0_6","8":"0_3"}' to localhost:16020
+2:  *** receiving message: Propose 3 0 Request localhost 4002 0 InitData {"10":"0_4","12":"0_5","15":"0_7","14":"0_6","8":"0_3"} ***
+send 'Accept 2 3 0 Request localhost 4002 0 InitData {"10":"0_4","12":"0_5","15":"0_7","14":"0_6","8":"0_3"}' to localhost:16020
+send 'Accept 2 3 0 Request localhost 4002 0 InitData {"10":"0_4","12":"0_5","15":"0_7","14":"0_6","8":"0_3"}' to localhost:16021
+Execute InitData {"10":"0_4","12":"0_5","15":"0_7","14":"0_6","8":"0_3"}
+send 'Reply 0 2' to localhost:4002
+2:  *** receiving message: Request localhost 4002 0 InitData {"10":"0_4","12":"0_5","15":"0_7","14":"0_6","8":"0_3"} ***
+send 'Request localhost 4002 0 InitData {"10":"0_4","12":"0_5","15":"0_7","14":"0_6","8":"0_3"}' to localhost:16020
+2:  *** receiving message: Accept 0 3 0 Request localhost 4002 0 InitData {"10":"0_4","12":"0_5","15":"0_7","14":"0_6","8":"0_3"} ***
+2:  *** receiving message: Propose 3 0 Request localhost 4002 0 InitData {"10":"0_4","12":"0_5","15":"0_7","14":"0_6","8":"0_3"} ***
+send 'Accept 2 3 0 Request localhost 4002 0 InitData {"10":"0_4","12":"0_5","15":"0_7","14":"0_6","8":"0_3"}' to localhost:16020
+send 'Accept 2 3 0 Request localhost 4002 0 InitData {"10":"0_4","12":"0_5","15":"0_7","14":"0_6","8":"0_3"}' to localhost:16021
+2:  *** receiving message: Request localhost 4002 0 InitData {"10":"0_4","12":"0_5","15":"0_7","14":"0_6","8":"0_3"} ***
+send 'Request localhost 4002 0 InitData {"10":"0_4","12":"0_5","15":"0_7","14":"0_6","8":"0_3"}' to localhost:16020
+2:  *** receiving message: Propose 3 0 Request localhost 4002 0 InitData {"10":"0_4","12":"0_5","15":"0_7","14":"0_6","8":"0_3"} ***
+send 'Accept 2 3 0 Request localhost 4002 0 InitData {"10":"0_4","12":"0_5","15":"0_7","14":"0_6","8":"0_3"}' to localhost:16020
+send 'Accept 2 3 0 Request localhost 4002 0 InitData {"10":"0_4","12":"0_5","15":"0_7","14":"0_6","8":"0_3"}' to localhost:16021
+2:  *** receiving message: Propose 3 0 Request localhost 4002 0 InitData {"10":"0_4","12":"0_5","15":"0_7","14":"0_6","8":"0_3"} ***
+send 'Accept 2 3 0 Request localhost 4002 0 InitData {"10":"0_4","12":"0_5","15":"0_7","14":"0_6","8":"0_3"}' to localhost:16020
+send 'Accept 2 3 0 Request localhost 4002 0 InitData {"10":"0_4","12":"0_5","15":"0_7","14":"0_6","8":"0_3"}' to localhost:16021
+2:  *** receiving message: Propose 3 1 Request localhost 5516 1 Get 11 1_0 ***
+send 'Accept 2 3 1 Request localhost 5516 1 Get 11 1_0' to localhost:16020
+send 'Accept 2 3 1 Request localhost 5516 1 Get 11 1_0' to localhost:16021
+Execute Get 11 1_0
+send 'Reply 1 No such key' to localhost:5516
+2:  *** receiving message: Accept 1 3 0 Request localhost 4002 0 InitData {"10":"0_4","12":"0_5","15":"0_7","14":"0_6","8":"0_3"} ***
+2:  *** receiving message: Accept 1 3 0 Request localhost 4002 0 InitData {"10":"0_4","12":"0_5","15":"0_7","14":"0_6","8":"0_3"} ***
+2:  *** receiving message: Accept 1 3 0 Request localhost 4002 0 InitData {"10":"0_4","12":"0_5","15":"0_7","14":"0_6","8":"0_3"} ***
+2:  *** receiving message: Accept 0 3 1 Request localhost 5516 1 Get 11 1_0 ***
+2:  *** receiving message: Propose 3 2 Request localhost 5515 9 Get 15 0_8 ***
+send 'Accept 2 3 2 Request localhost 5515 9 Get 15 0_8' to localhost:16020
+send 'Accept 2 3 2 Request localhost 5515 9 Get 15 0_8' to localhost:16021
+send 'IAmLeader 5' to localhost:16020
+send 'IAmLeader 5' to localhost:16021
+Execute Get 15 0_8
+send 'Reply 9 0_7' to localhost:5515
+2:  *** receiving message: Accept 0 3 2 Request localhost 5515 9 Get 15 0_8 ***
+2:  *** receiving message: Propose 3 3 Request localhost 5515 13 Get 8 0_12 ***
+send 'Accept 2 3 3 Request localhost 5515 13 Get 8 0_12' to localhost:16020
+send 'Accept 2 3 3 Request localhost 5515 13 Get 8 0_12' to localhost:16021
+Execute Get 8 0_12
+send 'Reply 13 0_3' to localhost:5515
+2:  *** receiving message: Accept 1 3 2 Request localhost 5515 9 Get 15 0_8 ***
+2:  *** receiving message: Accept 1 3 0 Request localhost 4002 0 InitData {"10":"0_4","12":"0_5","15":"0_7","14":"0_6","8":"0_3"} ***
+2:  *** receiving message: Accept 1 3 3 Request localhost 5515 13 Get 8 0_12 ***
+2:  *** receiving message: YouAreLeader 5  ***
+send 'LeaderIs 2 2' to localhost:4000
+2:  *** receiving message: Accept 1 3 4 Request localhost 5516 5 Get 8 1_4 ***
+2:  *** receiving message: Accept 0 3 4 Request localhost 5516 5 Get 8 1_4 ***
+2:  *** receiving message: YouAreLeader 5  ***
+2:  *** receiving message: Accept 1 3 1 Request localhost 5516 1 Get 11 1_0 ***
+2:  *** receiving message: ViewChange localhost 5515 ***
+send 'IAmLeader 8' to localhost:16020
+send 'IAmLeader 8' to localhost:16021
+2:  *** receiving message: IAmLeader 6 ***
+send 'YouAreLeader 6 ' to localhost:16020
+2:  *** receiving message: Propose 6 5 Request localhost 5515 14 Get 10 0_13 ***
+send 'Accept 2 6 5 Request localhost 5515 14 Get 10 0_13' to localhost:16020
+send 'Accept 2 6 5 Request localhost 5515 14 Get 10 0_13' to localhost:16021
+Execute Get 8 1_4
+send 'Reply 5 0_3' to localhost:5516
+Execute Get 10 0_13
+send 'Reply 14 0_4' to localhost:5515
+2:  *** receiving message: ViewChange localhost 5516 ***
+send 'IAmLeader 11' to localhost:16020
+send 'IAmLeader 11' to localhost:16021
+2:  *** receiving message: IAmLeader 7 ***
+send 'YouAreLeader 7 ' to localhost:16021
+2:  *** receiving message: Accept 0 6 5 Request localhost 5515 14 Get 10 0_13 ***
+2:  *** receiving message: Accept 1 6 5 Request localhost 5515 14 Get 10 0_13 ***
+2:  *** receiving message: IAmLeader 9 ***
+send 'YouAreLeader 9 ' to localhost:16020
+2:  *** receiving message: IAmLeader 10 ***
+send 'YouAreLeader 10 ' to localhost:16021
+2:  *** receiving message: YouAreLeader 8  ***
+2:  *** receiving message: YouAreLeader 8  ***
+2:  *** receiving message: Propose 10 6 Request localhost 5516 6 Get 10 1_5 ***
+send 'Accept 2 10 6 Request localhost 5516 6 Get 10 1_5' to localhost:16020
+send 'Accept 2 10 6 Request localhost 5516 6 Get 10 1_5' to localhost:16021
+Execute Get 10 1_5
+send 'Reply 6 0_4' to localhost:5516
+2:  *** receiving message: Accept 0 10 6 Request localhost 5516 6 Get 10 1_5 ***
+2:  *** receiving message: Accept 1 10 6 Request localhost 5516 6 Get 10 1_5 ***
+2:  *** receiving message: Propose 10 7 Request localhost 5515 15 Get 12 0_14 ***
+send 'Accept 2 10 7 Request localhost 5515 15 Get 12 0_14' to localhost:16020
+send 'Accept 2 10 7 Request localhost 5515 15 Get 12 0_14' to localhost:16021
+Execute Get 12 0_14
+send 'Reply 15 0_5' to localhost:5515
+2:  *** receiving message: Accept 1 10 7 Request localhost 5515 15 Get 12 0_14 ***
+2:  *** receiving message: YouAreLeader 11  ***
+send 'LeaderIs 2 2' to localhost:4000
+2:  *** receiving message: Request localhost 5515 16 Get 14 0_15 ***
+send 'Propose 11 8 Request localhost 5515 16 Get 14 0_15' to localhost:16020
+send 'Propose 11 8 Request localhost 5515 16 Get 14 0_15' to localhost:16021
+send 'Accept 2 11 8 Request localhost 5515 16 Get 14 0_15' to localhost:16020
+send 'Accept 2 11 8 Request localhost 5515 16 Get 14 0_15' to localhost:16021
+2:  *** receiving message: Propose 3 4 Request localhost 5516 5 Get 8 1_4 ***
+2:  *** receiving message: Accept 0 3 3 Request localhost 5515 13 Get 8 0_12 ***
+2:  *** receiving message: Request localhost 5516 6 Get 10 1_5 ***
+send 'Reply 6 0_4' to localhost:5516
+2:  *** receiving message: Request localhost 5515 14 Get 10 0_13 ***
+2:  *** receiving message: ViewChange localhost 5516 ***
+send 'IAmLeader 14' to localhost:16020
+send 'IAmLeader 14' to localhost:16021
+2:  *** receiving message: IAmLeader 13 ***
+send 'YouAreLeader 13 ' to localhost:16021
+2:  *** receiving message: Request localhost 5516 7 Get 12 1_6 ***
+send 'Request localhost 5516 7 Get 12 1_6' to localhost:16021
+2:  *** receiving message: YouAreLeader 11  ***
+2:  *** receiving message: Accept 0 11 8 Request localhost 5515 16 Get 14 0_15 ***
+2:  *** receiving message: YouAreLeader 14  ***
+Execute Get 14 0_15
+send 'Reply 16 0_6' to localhost:5515
+send 'LeaderIs 2 2' to localhost:4000
+2:  *** receiving message: IAmLeader 16 ***
+send 'YouAreLeader 16 ' to localhost:16021
+2:  *** receiving message: Propose 16 9 Request localhost 5516 7 Get 12 1_6 ***
+send 'Accept 2 16 9 Request localhost 5516 7 Get 12 1_6' to localhost:16020
+send 'Accept 2 16 9 Request localhost 5516 7 Get 12 1_6' to localhost:16021
+send 'IAmLeader 17' to localhost:16020
+send 'IAmLeader 17' to localhost:16021
+Execute Get 12 1_6
+send 'Reply 7 0_5' to localhost:5516
+2:  *** receiving message: Accept 1 16 9 Request localhost 5516 7 Get 12 1_6 ***
+2:  *** receiving message: IAmLeader 39 ***
+send 'YouAreLeader 39 ' to localhost:16020
+2:  *** receiving message: ViewChange localhost 5515 ***
+2:  *** receiving message: Propose 36 10 Request localhost 5516 8 Get 14 1_7 ***
+2:  *** receiving message: Accept 0 36 10 Request localhost 5516 8 Get 14 1_7 ***
+2:  *** receiving message: ViewChange localhost 5516 ***
+2:  *** receiving message: IAmLeader 42 ***
+send 'YouAreLeader 42 ' to localhost:16020
+2:  *** receiving message: Propose 36 11 Request localhost 5515 20 Put 8 0_19 ***
+2:  *** receiving message: Accept 0 36 11 Request localhost 5515 20 Put 8 0_19 ***
+2:  *** receiving message: Propose 36 10 Request localhost 5516 8 Get 14 1_7 ***
+2:  *** receiving message: Propose 42 10 Request localhost 5516 8 Get 14 1_7 ***
+send 'Accept 2 42 10 Request localhost 5516 8 Get 14 1_7' to localhost:16020
+send 'Accept 2 42 10 Request localhost 5516 8 Get 14 1_7' to localhost:16021
+Execute Get 14 1_7
+send 'Reply 8 0_6' to localhost:5516
+2:  *** receiving message: Accept 1 42 10 Request localhost 5516 8 Get 14 1_7 ***
+2:  *** receiving message: Propose 42 11 Request localhost 5515 20 Put 8 0_19 ***
+send 'Accept 2 42 11 Request localhost 5515 20 Put 8 0_19' to localhost:16020
+send 'Accept 2 42 11 Request localhost 5515 20 Put 8 0_19' to localhost:16021
+Execute Put 8 0_19
+send 'Reply 20 0' to localhost:5515
+2:  *** receiving message: Accept 1 42 11 Request localhost 5515 20 Put 8 0_19 ***
+2:  *** receiving message: Propose 42 12 Request localhost 5515 21 Put 10 0_20 ***
+send 'Accept 2 42 12 Request localhost 5515 21 Put 10 0_20' to localhost:16020
+send 'Accept 2 42 12 Request localhost 5515 21 Put 10 0_20' to localhost:16021
+Execute Put 10 0_20
+send 'Reply 21 0' to localhost:5515
+2:  *** receiving message: Accept 1 42 12 Request localhost 5515 21 Put 10 0_20 ***
+2:  *** receiving message: Accept 0 42 12 Request localhost 5515 21 Put 10 0_20 ***
+2:  *** receiving message: Propose 42 13 Request localhost 5515 22 Put 12 0_21 ***
+send 'Accept 2 42 13 Request localhost 5515 22 Put 12 0_21' to localhost:16020
+send 'Accept 2 42 13 Request localhost 5515 22 Put 12 0_21' to localhost:16021
+Execute Put 12 0_21
+send 'Reply 22 0' to localhost:5515
+2:  *** receiving message: Accept 1 42 13 Request localhost 5515 22 Put 12 0_21 ***
+2:  *** receiving message: Accept 0 42 13 Request localhost 5515 22 Put 12 0_21 ***
+2:  *** receiving message: Propose 42 14 Request localhost 5515 23 Put 14 0_22 ***
+send 'Accept 2 42 14 Request localhost 5515 23 Put 14 0_22' to localhost:16020
+send 'Accept 2 42 14 Request localhost 5515 23 Put 14 0_22' to localhost:16021
+Execute Put 14 0_22
+send 'Reply 23 0' to localhost:5515
+2:  *** receiving message: Accept 1 42 14 Request localhost 5515 23 Put 14 0_22 ***
+2:  *** receiving message: Accept 0 42 14 Request localhost 5515 23 Put 14 0_22 ***
+2:  *** receiving message: Propose 42 15 Request localhost 5515 24 Put 15 0_23 ***
+send 'Accept 2 42 15 Request localhost 5515 24 Put 15 0_23' to localhost:16020
+send 'Accept 2 42 15 Request localhost 5515 24 Put 15 0_23' to localhost:16021
+Execute Put 15 0_23
+send 'Reply 24 0' to localhost:5515
+2:  *** receiving message: Accept 1 42 15 Request localhost 5515 24 Put 15 0_23 ***
+2:  *** receiving message: Accept 0 42 15 Request localhost 5515 24 Put 15 0_23 ***
+2:  *** receiving message: Propose 42 16 Request localhost 5516 12 Put 8 1_11 ***
+send 'Accept 2 42 16 Request localhost 5516 12 Put 8 1_11' to localhost:16020
+send 'Accept 2 42 16 Request localhost 5516 12 Put 8 1_11' to localhost:16021
+Execute Put 8 1_11
+send 'Reply 12 0' to localhost:5516
+2:  *** receiving message: Accept 1 42 16 Request localhost 5516 12 Put 8 1_11 ***
+2:  *** receiving message: Accept 0 42 16 Request localhost 5516 12 Put 8 1_11 ***
+2:  *** receiving message: Propose 42 17 Request localhost 5516 13 Put 10 1_12 ***
+send 'Accept 2 42 17 Request localhost 5516 13 Put 10 1_12' to localhost:16020
+send 'Accept 2 42 17 Request localhost 5516 13 Put 10 1_12' to localhost:16021
+Execute Put 10 1_12
+send 'Reply 13 0' to localhost:5516
+2:  *** receiving message: Accept 1 42 17 Request localhost 5516 13 Put 10 1_12 ***
+2:  *** receiving message: Accept 0 42 17 Request localhost 5516 13 Put 10 1_12 ***
+2:  *** receiving message: Propose 42 18 Request localhost 5516 14 Put 12 1_13 ***
+send 'Accept 2 42 18 Request localhost 5516 14 Put 12 1_13' to localhost:16020
+send 'Accept 2 42 18 Request localhost 5516 14 Put 12 1_13' to localhost:16021
+Execute Put 12 1_13
+send 'Reply 14 0' to localhost:5516
+2:  *** receiving message: Accept 1 42 18 Request localhost 5516 14 Put 12 1_13 ***
+2:  *** receiving message: Accept 0 42 18 Request localhost 5516 14 Put 12 1_13 ***
+2:  *** receiving message: Propose 42 19 Request localhost 5515 28 Get 8 0_27 ***
+send 'Accept 2 42 19 Request localhost 5515 28 Get 8 0_27' to localhost:16020
+send 'Accept 2 42 19 Request localhost 5515 28 Get 8 0_27' to localhost:16021
+Execute Get 8 0_27
+send 'Reply 28 1_11' to localhost:5515
+2:  *** receiving message: Accept 1 42 19 Request localhost 5515 28 Get 8 0_27 ***
+2:  *** receiving message: Accept 0 42 19 Request localhost 5515 28 Get 8 0_27 ***
+2:  *** receiving message: Propose 42 20 Request localhost 5516 15 Put 14 1_14 ***
+send 'Accept 2 42 20 Request localhost 5516 15 Put 14 1_14' to localhost:16020
+send 'Accept 2 42 20 Request localhost 5516 15 Put 14 1_14' to localhost:16021
+Execute Put 14 1_14
+send 'Reply 15 0' to localhost:5516
+2:  *** receiving message: Accept 1 42 20 Request localhost 5516 15 Put 14 1_14 ***
+2:  *** receiving message: Accept 0 42 20 Request localhost 5516 15 Put 14 1_14 ***
+2:  *** receiving message: Propose 42 21 Request localhost 5515 29 Get 10 0_28 ***
+send 'Accept 2 42 21 Request localhost 5515 29 Get 10 0_28' to localhost:16020
+send 'Accept 2 42 21 Request localhost 5515 29 Get 10 0_28' to localhost:16021
+Execute Get 10 0_28
+send 'Reply 29 1_12' to localhost:5515
+2:  *** receiving message: Accept 1 42 21 Request localhost 5515 29 Get 10 0_28 ***
+2:  *** receiving message: Accept 0 42 21 Request localhost 5515 29 Get 10 0_28 ***
+2:  *** receiving message: Propose 42 22 Request localhost 5516 16 Put 15 1_15 ***
+send 'Accept 2 42 22 Request localhost 5516 16 Put 15 1_15' to localhost:16020
+send 'Accept 2 42 22 Request localhost 5516 16 Put 15 1_15' to localhost:16021
+Execute Put 15 1_15
+send 'Reply 16 0' to localhost:5516
+2:  *** receiving message: Accept 1 42 22 Request localhost 5516 16 Put 15 1_15 ***
+2:  *** receiving message: Accept 0 42 22 Request localhost 5516 16 Put 15 1_15 ***
+2:  *** receiving message: IAmLeader 45 ***
+send 'YouAreLeader 45 ' to localhost:16020
+2:  *** receiving message: ViewChange localhost 5516 ***
+2:  *** receiving message: ViewChange localhost 5515 ***
+2:  *** receiving message: Propose 45 23 Request localhost 5515 30 Get 12 0_29 ***
+send 'Accept 2 45 23 Request localhost 5515 30 Get 12 0_29' to localhost:16020
+send 'Accept 2 45 23 Request localhost 5515 30 Get 12 0_29' to localhost:16021
+Execute Get 12 0_29
+send 'Reply 30 1_13' to localhost:5515
+2:  *** receiving message: Accept 0 45 23 Request localhost 5515 30 Get 12 0_29 ***
+2:  *** receiving message: Accept 1 45 23 Request localhost 5515 30 Get 12 0_29 ***
+2:  *** receiving message: IAmLeader 48 ***
+send 'YouAreLeader 48 ' to localhost:16020
+2:  *** receiving message: Accept 1 48 24 Request localhost 5515 31 Get 14 0_30 ***
+Execute Get 14 0_30
+send 'Reply 31 1_14' to localhost:5515
+2:  *** receiving message: Propose 48 25 Request localhost 5516 20 Get 8 1_19 ***
+send 'Accept 2 48 25 Request localhost 5516 20 Get 8 1_19' to localhost:16020
+send 'Accept 2 48 25 Request localhost 5516 20 Get 8 1_19' to localhost:16021
+Execute Get 8 1_19
+send 'Reply 20 1_11' to localhost:5516
+2:  *** receiving message: Accept 0 48 25 Request localhost 5516 20 Get 8 1_19 ***
+2:  *** receiving message: IAmLeader 51 ***
+send 'YouAreLeader 51 ' to localhost:16020
+2:  *** receiving message: IAmLeader 54 ***
+send 'YouAreLeader 54 ' to localhost:16020
+2:  *** receiving message: Propose 48 26 Request localhost 5515 32 Get 15 0_31 ***
+2:  *** receiving message: Accept 1 48 25 Request localhost 5516 20 Get 8 1_19 ***
+2:  *** receiving message: ViewChange localhost 5516 ***
+2:  *** receiving message: Accept 0 48 24 Request localhost 5515 31 Get 14 0_30 ***
+2:  *** receiving message: Propose 54 26 Request localhost 5515 32 Get 15 0_31 ***
+send 'Accept 2 54 26 Request localhost 5515 32 Get 15 0_31' to localhost:16020
+send 'Accept 2 54 26 Request localhost 5515 32 Get 15 0_31' to localhost:16021
+Execute Get 15 0_31
+send 'Reply 32 1_15' to localhost:5515
+2:  *** receiving message: IAmLeader 57 ***
+send 'YouAreLeader 57 ' to localhost:16020
+2:  *** receiving message: ViewChange localhost 5515 ***
+2:  *** receiving message: Accept 0 48 26 Request localhost 5515 32 Get 15 0_31 ***
+2:  *** receiving message: ViewChange localhost 5515 ***
+send 'IAmLeader 59' to localhost:16020
+send 'IAmLeader 59' to localhost:16021
+2:  *** receiving message: Propose 48 24 Request localhost 5515 31 Get 14 0_30 ***
+2:  *** receiving message: ViewChange localhost 5516 ***
+send 'IAmLeader 62' to localhost:16020
+send 'IAmLeader 62' to localhost:16021
+2:  *** receiving message: IAmLeader 58 ***
+send 'YouAreLeader 58 ' to localhost:16021
+2:  *** receiving message: YouAreLeader 59  ***
+send 'LeaderIs 2 2' to localhost:4000
+2:  *** receiving message: ViewChange localhost 5516 ***
+send 'IAmLeader 65' to localhost:16020
+send 'IAmLeader 65' to localhost:16021
+2:  *** receiving message: IAmLeader 61 ***
+send 'YouAreLeader 61 ' to localhost:16021
+2:  *** receiving message: Propose 57 27 Request localhost 5516 21 Get 10 1_20 ***
+2:  *** receiving message: Propose 57 27 Request localhost 5516 21 Get 10 1_20 ***
+2:  *** receiving message: Request localhost 5516 21 Get 10 1_20 ***
+send 'Request localhost 5516 21 Get 10 1_20' to localhost:16021
+2:  *** receiving message: Accept 0 54 27 Request localhost 5516 21 Get 10 1_20 ***
+2:  *** receiving message: IAmLeader 69 ***
+send 'YouAreLeader 69 ' to localhost:16020
+2:  *** receiving message: YouAreLeader 59  ***
+2:  *** receiving message: YouAreLeader 62  ***
+2:  *** receiving message: Propose 69 27 Request localhost 5516 21 Get 10 1_20 ***
+send 'Accept 2 69 27 Request localhost 5516 21 Get 10 1_20' to localhost:16020
+send 'Accept 2 69 27 Request localhost 5516 21 Get 10 1_20' to localhost:16021
+Execute Get 10 1_20
+send 'Reply 21 1_12' to localhost:5516
+2:  *** receiving message: IAmLeader 63 ***
+2:  *** receiving message: ViewChange localhost 5516 ***
+2:  *** receiving message: Propose 57 27 Request localhost 5516 21 Get 10 1_20 ***
+2:  *** receiving message: YouAreLeader 65  ***
+2:  *** receiving message: Request localhost 5516 21 Get 10 1_20 ***
+send 'Request localhost 5516 21 Get 10 1_20' to localhost:16020
+2:  *** receiving message: IAmLeader 66 ***
+2:  *** receiving message: Propose 69 28 Request localhost 5516 22 Get 12 1_21 ***
+send 'Accept 2 69 28 Request localhost 5516 22 Get 12 1_21' to localhost:16020
+send 'Accept 2 69 28 Request localhost 5516 22 Get 12 1_21' to localhost:16021
+Execute Get 12 1_21
+send 'Reply 22 1_13' to localhost:5516
+2:  *** receiving message: Accept 0 69 28 Request localhost 5516 22 Get 12 1_21 ***
+2:  *** receiving message: ViewChange localhost 5516 ***
+2:  *** receiving message: IAmLeader 72 ***
+send 'YouAreLeader 72 ' to localhost:16020
+2:  *** receiving message: IAmLeader 75 ***
+send 'YouAreLeader 75 ' to localhost:16020
+2:  *** receiving message: Propose 72 29 Request localhost 5516 23 Get 14 1_22 ***
+2:  *** receiving message: Accept 0 72 29 Request localhost 5516 23 Get 14 1_22 ***
+2:  *** receiving message: IAmLeader 85 ***
+send 'YouAreLeader 85 ' to localhost:16021
+2:  *** receiving message: Propose 79 30 Request localhost 5516 24 Get 15 1_23 ***
+2:  *** receiving message: Accept 1 79 30 Request localhost 5516 24 Get 15 1_23 ***
+2:  *** receiving message: Propose 85 30 Request localhost 5516 24 Get 15 1_23 ***
+send 'Accept 2 85 30 Request localhost 5516 24 Get 15 1_23' to localhost:16020
+send 'Accept 2 85 30 Request localhost 5516 24 Get 15 1_23' to localhost:16021
+2:  *** receiving message: IAmLeader 84 ***
+2:  *** receiving message: IAmLeader 87 ***
+send 'YouAreLeader 87 ' to localhost:16020
+2:  *** receiving message: IAmLeader 88 ***
+send 'YouAreLeader 88 ' to localhost:16021
+2:  *** receiving message: ViewChange localhost 5516 ***
+send 'IAmLeader 89' to localhost:16020
+send 'IAmLeader 89' to localhost:16021
+2:  *** receiving message: IAmLeader 93 ***
+send 'YouAreLeader 93 ' to localhost:16020
+2:  *** receiving message: IAmLeader 91 ***
+2:  *** receiving message: IAmLeader 90 ***
+2:  *** receiving message: ViewChange localhost 5516 ***
+2:  *** receiving message: IAmLeader 94 ***
+send 'YouAreLeader 94 ' to localhost:16021

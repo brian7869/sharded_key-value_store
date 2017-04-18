@@ -1,0 +1,27 @@
+Put 0 0_0	result: 0
+Put 2 0_1	result: 0
+Put 4 0_2	result: 0
+Put 8 0_3	result: 0
+Put 10 0_4	result: 0
+Put 12 0_5	result: 0
+Put 14 0_6	result: 0
+Put 15 0_7	result: 0
+AddShard 8 16 [["localhost",16010],["localhost",16011],["localhost",16012]]	result: {"10":"0_4","12":"0_5","15":"0_7","14":"0_6","8":"0_3"}
+Get 0 0_9	result: 0_0
+Get 2 0_10	result: 0_1
+Get 4 0_11	result: 0_2
+Get 0 1_1	result: 0_0
+Get 2 1_2	result: 0_1
+Get 4 1_3	result: 0_2
+Put 0 0_16	result: 0
+Put 2 0_17	result: 0
+Put 4 0_18	result: 0
+Put 0 1_8	result: 0
+Put 2 1_9	result: 0
+Put 4 1_10	result: 0
+Get 0 0_24	result: 1_8
+Get 2 0_25	result: 1_9
+Get 4 0_26	result: 1_10
+Get 0 1_16	result: 1_8
+Get 2 1_17	result: 1_9
+Get 4 1_18	result: 1_10

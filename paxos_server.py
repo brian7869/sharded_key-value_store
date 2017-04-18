@@ -362,10 +362,12 @@ class Paxos_server(Process):
 	        	print self.accepted[self.executed_command_slot]['result'], result
 	        	assert False and 'Reach divergent state'
 	        self.accepted[self.executed_command_slot]['result'] = result
-	        message = "Reply {} {}".format(self.accepted[self.executed_command_slot]['client_seq'], str(result))
+	        reply_to_client_message = "Reply {} {}".format(self.accepted[self.executed_command_slot]['client_seq'], str(result))
+	        reply_to_master_message = "Reply {} {}".format(self.accepted[self.executed_command_slot]['client_address'], self.shard_id)
 	        if client_addr[0] == '-1' or self.accepted[self.executed_command_slot]['command'].find('AddShard') != -1:
 	            continue
-	        send_message(client_addr[0], client_addr[1], message, random)
+	        send_message(client_addr[0], client_addr[1], reply_to_client_message, random)
+	        send_message(MASTER_HOST, MASTER_PORT, reply_to_master_message, random)
 
 	def run_command(self, host, port, command):
 		print("Execute {}".format(command))

@@ -357,7 +357,7 @@ class Paxos_server(Process):
 	        client_addr = self.accepted[self.executed_command_slot]['client_address'].split(':')
 	        result = self.run_command(client_addr[0], client_addr[1], self.accepted[self.executed_command_slot]['command'])
 	        with open('log/shard{}_replica{}.log'.format(self.shard_id, self.replica_id), 'a') as log_f:
-				log_f.write('{}\n\t{}\n'.format(self.accepted[self.executed_command_slot]['command'], result))
+				log_f.write('{}\tresult: {}\n'.format(self.accepted[self.executed_command_slot]['command'], result))
 	        if self.accepted[self.executed_command_slot]['result'] is not False and self.accepted[self.executed_command_slot]['result'] != result:
 	        	print self.accepted[self.executed_command_slot]['result'], result
 	        	assert False and 'Reach divergent state'
@@ -377,13 +377,13 @@ class Paxos_server(Process):
 			self.data[key] = value
 			return 0
 		elif type_of_command == "Get":
-			key = rest_of_command
+			key = rest_of_command.split(' ')[0]
 			if key in self.data:
 				return self.data[key]
 			else:
 				return 'No such key'
 		elif type_of_command == "Delete":
-			key = rest_of_command
+			key = rest_of_command.split(' ')[0]
 			if key in self.data:
 				del self.data[key]
 				return 0

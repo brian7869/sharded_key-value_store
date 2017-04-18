@@ -18,10 +18,13 @@ def json_spaceless_dump(obj):
 def json_set_serializable_load(obj):
 	return json.loads(obj, object_hook=as_python_object)
 
+# def get_hash_value(key):
+#     hash_func = hashlib.new(HASH_FUNC)
+#     hash_func.update(key)
+#     return int(hash_func.hexdigest()[-NUM_HEXDIGITS:], 16)
+
 def get_hash_value(key):
-    hash_func = hashlib.new(HASH_FUNC)
-    hash_func.update(key)
-    return int(hash_func.hexdigest()[:NUM_HEXDIGITS], 16)
+    return int(key) % (16 ** NUM_HEXDIGITS)
 
 def within_the_range(begin, end, hash_value):
     return hash_value >= begin and hash_value < end

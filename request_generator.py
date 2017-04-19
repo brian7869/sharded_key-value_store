@@ -6,11 +6,11 @@ prob_of_put = 0.4
 def random_request(client_id, seq):
 	random_for_type = random.random()
 	if random_for_type < prob_of_get:
-		return 'Get {} {}_{}\n'.format(random.randint(100,109), client_id, seq)
+		return 'Get {} {}_{}\n'.format(random.randint(0,15), client_id, seq)
 	elif random_for_type >= prob_of_get and random_for_type < prob_of_get + prob_of_put:
-		return 'Put {} {}_{}\n'.format(random.randint(100,109), client_id, seq)
+		return 'Put {} {}_{}\n'.format(random.randint(0,15), client_id, seq)
 	else:
-		return 'Delete {} {}_{}\n'.format(random.randint(100,109), client_id, seq)
+		return 'Delete {} {}_{}\n'.format(random.randint(0,15), client_id, seq)
 	seq += 1
 
 if __name__ == '__main__':

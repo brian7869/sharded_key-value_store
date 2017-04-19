@@ -73,9 +73,9 @@ class Master:
 			hash_value = get_hash_value(key)
 			shard_id = self.get_responsible_shard(hash_value)
 			self.assignment_list[client_addr] = (shard_id, message)
-			print("key: {},\thash: {},\tshard_id: {}".format(key, str(hash_value), shard_id))
 			
 			status_code = self.cfg["shards"][shard_id]["status"]
+			print("key: {},\thash: {},\tshard_id: {},\tstatus: {}".format(key, str(hash_value), shard_id, status_code))
 			if status_code == READY:
 				self.forward_message(shard_id, message)
 				self.ongoing_list_lock.acquire()
@@ -108,8 +108,8 @@ class Master:
 				shard_id = self.get_responsible_shard(hash_value)
 				self.assignment_list[client_addr] = (shard_id, rest_of_message)
 
-			print("key: {},\tshard_id: {}".format(key, shard_id))
 			status_code = self.cfg["shards"][shard_id]["status"]
+			print("key: {},\tshard_id: {},\tstatus: {}".format(key, shard_id, status_code))
 			if status_code == READY:
 				viewchange_message = "ViewChange {} {}".format(host, port)
 				self.wait_list_lock.acquire()
@@ -179,13 +179,14 @@ class Master:
 				self.wait_list_lock.release()
 		elif type_of_message == "Reply":
 			client_addr, shard_id = tuple(rest_of_message.split(' ', 2))
+			shard_id = int(shard_id)
 			status_code = self.cfg["shards"][shard_id]["status"]
 			if status_code == READY:
 				self.ongoing_list_lock.acquire()
 				self.pop_ongoing_list_with_client_addr(shard_id, client_addr)
 				self.ongoing_list_lock.release()
 			elif status_code == NEW:
-				self.end_add_shard_thread(shard_id)
+				# self.end_add_shard_thread(shard_id)
 				for i in xrange(len(self.add_shard_list)):
 					if self.add_shard_list[i][2] == shard_id:
 						new_shard_id = shard_id
@@ -274,7 +275,7 @@ class Master:
 
 	def pop_ongoing_list_with_next_client_seq(self, client_addr, client_seq):
 		for shard_id in xrange(self.num_shards):
-			for i in xrange(self.ongoing_list[shard_id]):
+			for i in xrange(len(self.ongoing_list[shard_id])):
 				ongoing_request = self.ongoing_list[shard_id][i]
 				type_of_req, host, port, old_client_seq, command = tuple(ongoing_request.split(' ', 4))
 				old_client_addr = '{}:{}'.format(host, port)
@@ -296,24 +297,25 @@ class Master:
 		pop_host, pop_port = client_addr.split(':', 1)
 		for i in xrange(len(self.ongoing_list[shard_id])):
 			ongoing_req = self.ongoing_list[shard_id][i]
-			type_of_req, host, port, old_client_seq, command = tuple(ongoing_request.split(' ', 4))
+			type_of_req, host, port, old_client_seq, command = tuple(ongoing_req.split(' ', 4))
 			if host == pop_host and port == pop_port:
-				self.pop_ongoing_list(self, shard_id, i)
+				self.pop_ongoing_list(shard_id, i)
 				return
 
 	def notify_ongoing_list_change(self, old_shard_id, new_shard_id):
 		update_msg = "Update {}".format(old_shard_id)
 		send_message(self.host, self.port + new_shard_id, update_msg, random)
 
-	def end_add_shard_thread(self, new_shard_id):
-		end_msg = "End {}".format(new_shard_id)
-		send_message(self.host, self.port + new_shard_id, end_msg, random)
+	# def end_add_shard_thread(self, new_shard_id):
+	# 	end_msg = "End {}".format(new_shard_id)
+	# 	send_message(self.host, self.port + new_shard_id, end_msg, random)
 
 	def add_shard(self, old_shard_id, new_shard_id, add_shard_request):
 		thread_port = self.port + new_shard_id
 		viewchange = "ViewChange {} {}".format(self.host, str(thread_port))
-
-		# Server request in ongoing_list
+		
+		print("-------- AddShard {} begins --------".format(new_shard_id))
+		# Serve request in ongoing_list
 		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		sock.bind((self.host, thread_port))
 		sock.listen(5)
@@ -330,6 +332,7 @@ class Master:
 			if len(ongoing_list_copy) == 0:
 				break
 
+			print("-------- AddShard {}: {} ongoing requests remain --------".format(new_shard_id, len(ongoing_list_copy)))
 			for ongoing_req in ongoing_list_copy:
 				self.forward_message(old_shard_id, ongoing_req)
 
@@ -366,10 +369,16 @@ class Master:
 							sock.settimeout(max(sock.gettimeout() - elapsed, 0.01))
 
 				except socket.timeout:
+					self.ongoing_list_lock.acquire()
+					ongoing_list_copy = self.ongoing_list[old_shard_id]
+					self.ongoing_list_lock.release()
+					if len(ongoing_list_copy) == 0:
+						break
 					self.broadcast_message(old_shard_id, viewchange)
 					timeout *= 2
 					sock.settimeout(timeout)
 					
+		print("-------- AddShard {} empties ongoing_list --------".format(new_shard_id))
 		# Upon emptying the ongoing_list
 		self.forward_message(old_shard_id, add_shard_request)
 		sock.settimeout(TIMEOUT)
@@ -403,17 +412,20 @@ class Master:
 						sock.settimeout(timeout)
 					else:
 						sock.settimeout(max(sock.gettimeout() - elapsed, 0.01))
-				elif type_of_message == "End":
-					shard_id = int(rest_of_message)
-					if shard_id == new_shard_id:
-						break
+				# elif type_of_message == "End":
+				# 	shard_id = int(rest_of_message)
+				# 	if shard_id == new_shard_id:
+				# 		break
 			except socket.timeout:
-				leaderIs_received = []
-				self.broadcast_message(old_shard_id, viewchange)
-				self.broadcast_message(new_shard_id, viewchange)
+				if self.cfg["shards"][new_shard_id]["status"] != NEW:
+					break
+				if old_shard_id not in leaderIs_received:
+					self.broadcast_message(old_shard_id, viewchange)
+				if new_shard_id not in leaderIs_received:
+					self.broadcast_message(new_shard_id, viewchange)
 				timeout *= 2
 				sock.settimeout(timeout)
-		print("-------- AddShard {} complete --------".format(new_shard_id))
+		print("-------- AddShard {} completes --------".format(new_shard_id))
 
 if __name__ == '__main__':
 	master_config_file = sys.argv[1]

@@ -1,7 +1,7 @@
 from multiprocessing import Process
 import socket, sys, random, time
-from config import MASTER_HOST, MASTER_PORT, TIMEOUT, CLIENT_ADDR
 from paxos_utils import send_message, send_message_without_failure
+from config import MASTER_HOST, MASTER_PORT, TIMEOUT, CLIENT_ADDR
 
 ACK = 1
 SKIP = 2
@@ -27,7 +27,7 @@ def run(client_id, host, port):
 		user_input = raw_input("Type in request: (1) Get <key> (2) Put <key> <value> (3) Delete <key> (4) AddShard <configFileName>\n")
 		request = user_input.rstrip()
 		if request.find("AddShard") != -1:
-			send_message_without_failure(MASTER_HOST, MASTER_PORT, request)
+			send_message(MASTER_HOST, MASTER_PORT, request, random)
 		else:
 			req_message = "Request {} {} {} {}".format(host, str(port)
 						, str(client_seq), request)

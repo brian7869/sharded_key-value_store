@@ -1,5 +1,5 @@
 import json, pickle, hashlib, socket, time
-from config import HASH_FUNC, NUM_HEXDIGITS, THRESHOLD
+from config import HASH_FUNC, NUM_HEXDIGITS, DROP_RATE
 
 class PythonObjectEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -30,7 +30,7 @@ def within_the_range(begin, end, hash_value):
     return hash_value >= begin and hash_value < end
 
 def send_message(host, port, message, random):
-    if message.find("Heartbeat") != -1 or random.random() > THRESHOLD:
+    if message.find("Heartbeat") != -1 or random.random() > DROP_RATE:
         if message.find("Heartbeat") == -1:
             if message.find("YouAreLeader") != -1: 
                 print "send '{}' to {}:{}".format(message[:message.find('{')], host, str(port))

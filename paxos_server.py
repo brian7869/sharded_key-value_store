@@ -158,15 +158,15 @@ class Paxos_server(Process):
 				accepted = json_set_serializable_load(accepted)
 				for slot, inner_dict in accepted.iteritems():
 					slot = int(slot)
-					if slot not in self.accepted or inner_dict['leader_num'] > self.accepted[slot]['leader_num']:
-						self.accepted[slot] = inner_dict
+					if slot not in self.accepted or (inner_dict['leader_num'] > self.accepted[int(slot)]['leader_num'] and self.accepted[slot]['result'] is None):
+						self.accepted[int(slot)] = inner_dict
 						if inner_dict['client_address'] not in self.client_progress or inner_dict['client_seq'] > self.client_progress[inner_dict['client_address']]['client_seq']:
 							self.client_progress[inner_dict['client_address']] = {'client_seq': inner_dict['client_seq'], 'slot': slot}
-					elif inner_dict['leader_num'] == self.accepted[slot]['leader_num']:
-						if self.accepted[slot]['client_address'] == inner_dict['client_address']\
-							and self.accepted[slot]['client_seq'] == inner_dict['client_seq']:
-							self.accepted[slot]['accepted_replicas'].update(inner_dict['accepted_replicas'])
-							if len(self.accepted[slot]['accepted_replicas']) >= MAX_FAILURE + 1:
+					elif inner_dict['leader_num'] == self.accepted[int(slot)]['leader_num']:
+						if self.accepted[int(slot)]['client_address'] == inner_dict['client_address']\
+							and self.accepted[int(slot)]['client_seq'] == inner_dict['client_seq']:
+							self.accepted[int(slot)]['accepted_replicas'].update(inner_dict['accepted_replicas'])
+							if len(self.accepted[int(slot)]['accepted_replicas']) >= MAX_FAILURE + 1:
 								self.decide_value(slot)
 						else:
 							assert False and 'Different values proposed in the same slot by the same leader'
@@ -196,7 +196,7 @@ class Paxos_server(Process):
 
 				if client_address in self.client_progress\
 					and request['client_seq'] > self.client_progress[client_address]['client_seq']\
-					and self.accepted[self.client_progress[client_address]['slot']]['result'] is None:
+					and self.accepted[int(self.client_progress[client_address]['slot'])]['result'] is None:
 					slot_to_fill = self.client_progress[client_address]['slot']
 					self.decide_value(slot_to_fill)
 
@@ -204,16 +204,16 @@ class Paxos_server(Process):
 					self.client_progress[client_address] = {'client_seq': request['client_seq'], 'slot': slot}
 
 				if slot not in self.accepted:
-					self.accepted[slot] = self.get_new_accepted(client_address, request['client_seq'], leader_num, request['command'], set([self.replica_id, leader_id]), None)
+					self.accepted[int(slot)] = self.get_new_accepted(client_address, request['client_seq'], leader_num, request['command'], set([self.replica_id, leader_id]), None)
 				else:
-					if self.accepted[slot]['client_address'] == client_address\
-						and self.accepted[slot]['client_seq'] == request['client_seq']:
-						self.accepted[slot]['accepted_replicas'].add(self.replica_id)
+					if self.accepted[int(slot)]['client_address'] == client_address\
+						and self.accepted[int(slot)]['client_seq'] == request['client_seq']:
+						self.accepted[int(slot)]['accepted_replicas'].add(self.replica_id)
 					else: # larger leader_num wins
-						self.accepted[slot] = self.get_new_accepted(client_address, request['client_seq'], leader_num, request['command'], set([self.replica_id, leader_id]), None)
+						self.accepted[int(slot)] = self.get_new_accepted(client_address, request['client_seq'], leader_num, request['command'], set([self.replica_id, leader_id]), None)
 
-				if len(self.accepted[slot]['accepted_replicas']) >= MAX_FAILURE + 1\
-					and self.accepted[slot]['result'] is None:
+				if len(self.accepted[int(slot)]['accepted_replicas']) >= MAX_FAILURE + 1\
+					and self.accepted[int(slot)]['result'] is None:
 					self.decide_value(slot)
 
 		elif type_of_message == "Accept":
@@ -231,7 +231,7 @@ class Paxos_server(Process):
 
 				if client_address in self.client_progress\
 					and request['client_seq'] > self.client_progress[client_address]['client_seq']\
-					and self.accepted[self.client_progress[client_address]['slot']]['result'] is None:
+					and self.accepted[int(self.client_progress[client_address]['slot'])]['result'] is None:
 					slot_to_fill = self.client_progress[client_address]['slot']
 					self.decide_value(slot_to_fill)
 
@@ -239,17 +239,17 @@ class Paxos_server(Process):
 					self.client_progress[client_address] = {'client_seq': request['client_seq'], 'slot': slot}
 
 				if slot not in self.accepted:
-					self.accepted[slot] = self.get_new_accepted(client_address, request['client_seq'], leader_num, request['command'], set([self.replica_id, leader_id]), None)
+					self.accepted[int(slot)] = self.get_new_accepted(client_address, request['client_seq'], leader_num, request['command'], set([self.replica_id, leader_id]), None)
 				else:
-					if self.accepted[slot]['client_address'] == client_address\
-						and self.accepted[slot]['client_seq'] == request['client_seq']:
-						self.accepted[slot]['accepted_replicas'].add(sender_id)
+					if self.accepted[int(slot)]['client_address'] == client_address\
+						and self.accepted[int(slot)]['client_seq'] == request['client_seq']:
+						self.accepted[int(slot)]['accepted_replicas'].add(sender_id)
 					else: # larger leader_num wins
 						# debug_print('over write happens!!!')
-						self.accepted[slot] = self.get_new_accepted(client_address, request['client_seq'], leader_num, request['command'], set([self.replica_id, leader_id]), None)
+						self.accepted[int(slot)] = self.get_new_accepted(client_address, request['client_seq'], leader_num, request['command'], set([self.replica_id, leader_id]), None)
 
-				if len(self.accepted[slot]['accepted_replicas']) >= MAX_FAILURE + 1\
-					and self.accepted[slot]['result'] is None:
+				if len(self.accepted[int(slot)]['accepted_replicas']) >= MAX_FAILURE + 1\
+					and self.accepted[int(slot)]['result'] is None:
 					self.decide_value(slot)
 
 		elif type_of_message == "Request":
@@ -267,21 +267,25 @@ class Paxos_server(Process):
 					and self.client_progress[client_address]['client_seq'] >= request['client_seq']:
 					if self.client_progress[client_address]['client_seq'] == request['client_seq']:
 						allocated_slot = self.client_progress[client_address]['slot']
-						result = self.accepted[allocated_slot]['result']
+						result = self.accepted[int(allocated_slot)]['result']
+						self.debug_print('result in slot {}: {}'.format(allocated_slot, result))
 						if result is not None and result is not False:
-							if self.accepted[allocated_slot]['command'].find('AddShard') != -1:
-								type_of_command, begin, end, new_shard_address = tuple(self.accepted[allocated_slot]['command'].split(' ', 3))
-								data_to_transfer_json = self.accepted[allocated_slot]['result']
+							if self.accepted[int(allocated_slot)]['command'].find('AddShard') != -1:
+								type_of_command, begin, end, new_shard_address = tuple(self.accepted[int(allocated_slot)]['command'].split(' ', 3))
+								data_to_transfer_json = self.accepted[int(allocated_slot)]['result']
 								self.transfer_data(request['host'], request['port'], new_shard_address, data_to_transfer_json)
 							else:
-								message = "Reply {} {}".format(request['client_seq'], str(self.accepted[allocated_slot]['result']))
-								send_message(request['host'], request['port'], message, random)
+								if client_address != '-1:-1':
+									reply_to_client_message = "Reply {} {}".format(request['client_seq'], str(self.accepted[int(allocated_slot)]['result']))
+									reply_to_master_message = "Reply {} {}".format(client_address, self.shard_id)
+									send_message(request['host'], request['port'], reply_to_client_message, random)
+									send_message(MASTER_HOST, MASTER_PORT, reply_to_master_message, random)
 						else:
 							# self.debug_print("Repropose request {}".format(message))
 							self.propose(allocated_slot, message)
 				else:
 					assigned_slot = self.get_new_assigned_slot()
-					self.accepted[assigned_slot] = self.get_new_accepted(client_address, request['client_seq'], self.leader_num, request['command'], set([self.replica_id]), None)
+					self.accepted[int(assigned_slot)] = self.get_new_accepted(client_address, request['client_seq'], self.leader_num, request['command'], set([self.replica_id]), None)
 					self.client_progress[client_address] = {'client_seq': request['client_seq'], 'slot': assigned_slot}
 					self.propose(assigned_slot, message)
 					self.accept(self.replica_id, assigned_slot, message)
@@ -347,24 +351,24 @@ class Paxos_server(Process):
 	################# Here are helper functions for learner #################
 	def decide_value(self, slot):
 		# print("Decide slot {}".format(str(slot)))
-		if self.accepted[slot]['result'] is None:
-			self.accepted[slot]['result'] = False
+		if self.accepted[int(slot)]['result'] is None:
+			self.accepted[int(slot)]['result'] = False
 		self.execute()
 
 	def execute(self):
-	    while self.executed_command_slot + 1 in self.accepted and self.accepted[self.executed_command_slot + 1]['result'] is not None:
+	    while self.executed_command_slot + 1 in self.accepted and self.accepted[int(self.executed_command_slot) + 1]['result'] is not None:
 	        self.executed_command_slot += 1
-	        client_addr = self.accepted[self.executed_command_slot]['client_address'].split(':')
-	        result = self.run_command(client_addr[0], client_addr[1], self.accepted[self.executed_command_slot]['command'])
+	        client_addr = self.accepted[int(self.executed_command_slot)]['client_address'].split(':')
+	        result = self.run_command(client_addr[0], client_addr[1], self.accepted[int(self.executed_command_slot)]['command'])
 	        with open('log/shard{}_replica{}.log'.format(self.shard_id, self.replica_id), 'a') as log_f:
-				log_f.write('{}\tresult: {}\n'.format(self.accepted[self.executed_command_slot]['command'], result))
-	        if self.accepted[self.executed_command_slot]['result'] is not False and self.accepted[self.executed_command_slot]['result'] != result:
-	        	print self.accepted[self.executed_command_slot]['result'], result
+				log_f.write('{}\tresult: {}\n'.format(self.accepted[int(self.executed_command_slot)]['command'], result))
+	        if self.accepted[int(self.executed_command_slot)]['result'] is not False and self.accepted[int(self.executed_command_slot)]['result'] != result:
+	        	print self.accepted[int(self.executed_command_slot)]['result'], result
 	        	assert False and 'Reach divergent state'
-	        self.accepted[self.executed_command_slot]['result'] = result
-	        reply_to_client_message = "Reply {} {}".format(self.accepted[self.executed_command_slot]['client_seq'], str(result))
-	        reply_to_master_message = "Reply {} {}".format(self.accepted[self.executed_command_slot]['client_address'], self.shard_id)
-	        if client_addr[0] == '-1' or self.accepted[self.executed_command_slot]['command'].find('AddShard') != -1:
+	        self.accepted[int(self.executed_command_slot)]['result'] = result
+	        reply_to_client_message = "Reply {} {}".format(self.accepted[int(self.executed_command_slot)]['client_seq'], str(self.accepted[int(self.executed_command_slot)]['result']))
+	        reply_to_master_message = "Reply {} {}".format(self.accepted[int(self.executed_command_slot)]['client_address'], self.shard_id)
+	        if client_addr[0] == '-1' or self.accepted[int(self.executed_command_slot)]['command'].find('AddShard') != -1:
 	            continue
 	        send_message(client_addr[0], client_addr[1], reply_to_client_message, random)
 	        send_message(MASTER_HOST, MASTER_PORT, reply_to_master_message, random)
@@ -372,12 +376,12 @@ class Paxos_server(Process):
 	def run_command(self, host, port, command):
 		print("Execute {}".format(command))
 		if command == "NOOP":
-			return 0
+			return 1
 		type_of_command, rest_of_command = tuple(command.split(' ', 1))
 		if type_of_command == "Put":
 			key, value = tuple(rest_of_command.split(' ', 1))
 			self.data[key] = value
-			return 0
+			return 1
 		elif type_of_command == "Get":
 			key = rest_of_command.split(' ')[0]
 			if key in self.data:
@@ -388,7 +392,7 @@ class Paxos_server(Process):
 			key = rest_of_command.split(' ')[0]
 			if key in self.data:
 				del self.data[key]
-				return 0
+				return 1
 			else:
 				return 'No such key'
 		elif type_of_command == "AddShard":
@@ -445,7 +449,7 @@ class Paxos_server(Process):
 		for slot in xrange(int(self.assigned_command_slot)):
 			if slot not in self.accepted:
 				noop_request = "Request -1 -1 -1 NOOP"
-				self.accepted[slot] = self.get_new_accepted('-1:-1', -1, self.leader_num, 'NOOP', set([self.replica_id]), None)
+				self.accepted[int(slot)] = self.get_new_accepted('-1:-1', -1, self.leader_num, 'NOOP', set([self.replica_id]), None)
 				self.propose(slot, noop_request)
 	################# End of helper functions for view change #################
 

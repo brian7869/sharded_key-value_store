@@ -49,6 +49,23 @@ def send_message(host, port, message, random):
         else:
             print "drop '{}' to {}:{}".format(message, host, str(port))
 
+# def send_message(host, port, message, random):
+#     if message.find("Heartbeat") == -1:
+#         if message.find("YouAreLeader") != -1:
+#             prompt = "drop '{}' to {}:{}...? (y/n)".format(message[:message.find('{')], host, str(port))
+#         else:
+#             prompt = "send '{}' to {}:{}...? (y/n)".format(message, host, str(port))
+#         decision = raw_input(prompt)
+#         if decision == 'n':
+#             return
+#     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#     try:
+#         sock.connect((host, int(port)))
+#         sock.sendall(message)
+#         sock.close()
+#     except Exception:
+#         pass
+
 def send_message_without_failure(host, port, message):
     print "send '{}' to {}:{}".format(message, host, str(port))
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

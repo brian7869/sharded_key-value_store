@@ -2,36 +2,66 @@ Team member: Wei Lee, Wei-Chih Lu
 
  - Instructions on how to use it:
  	
- 	0. Edit configuration in config.py if necessary
+ 	0. Edit configuration in config.py, master_config, shardX_cfg if necessary
 
- 	1A. For local testing:
+ 	1. Before testing:
 
  		Decide these following input arguments before continuing 
-	 		a. max_failure: That is f (Default maximum: 7)
-		 	b. # of clients: Number of clients you want to test (Default Maximum: 30)
-		 	c. # of commands: Number of commands each client will send to servers
-		 	d. can_skip_slot: Max number of slots one server can skip when it is in power
-		 	e. fail_view_change: Deliberately fail on view change for f times
+	 		a. MAX_FAILURE: That is f (Default maximum if shardx_cfg not modified: 3)
+		 	b. THRESHOLD: simulate global drop rate when sending messgae
 
- 		Run: $ python local_test.py <max_failure> <# of clients> <# of commands> <can_skip_slot> <fail_view_change>
+		Start master:
+			Run $ python master_node.py master_config
+		Start paxos server:
+			Run $ python paxos_server.py <shard_id> <replica_id> <shard_config> <skipped slot(-1 to not skip)> <fail_view_change>
+			example: python paxos_server 0 0 shard0_cfg -1 0
+		Start client:
+			manual mode:
+			Run $ python paxos_client.py <client_id>
+			batch mode:
+			Run $ python paxos_client.py <client_id> < testcase/<testcase_file>
 
-	1B. For testing on multiple machines:
+		Check output:
+			Run $ diff log/<log_file1> log/<log_file>
+			to check difference between replicas in one shard
+			Run $ python check_key.py log/<log_file> <key>
+			to look for anomaly for a certain key
 
-		*** Set server_addresses and client_addresses to correct values in step 0 before running!!! *** 
+	2. Testing functionality:
 
-		Run $ python start_server.py <max_failure> <replica_id> <can_skip_slot> <fail_view_change>
+		a. Normal Operations
+			Run $ python paxos_client.py 0 < testcase/test_normal_0
+			or
+			Run $ python paxos_client.py 0 < testcase/test_normal_1
+			or
+			Run $ python paxos_client.py 0 < testcase/test_normal_2
+			or
+			concurrently on different clients and check linearizability
+		b. Finest-grained testing
+			Before starting paxos_server:
+				Go to paxos_utils.py
+				Comment current send_message and uncomment the commented one
+			Start replicas as usual:
+				When prompt shows up, type y/n to (not drop)/(drop) a message
+		c. Add Shard
+			Run $ python paxos_client.py 0 < testcase/test_add_shard_0
+		d. Contigent Add Shard
+			Start shard0 servers 1 before 0, 2, so that there is leader initially
+			Start shard1 servers 0 before 1, 2, so that there is no leader initially
+			Start shard2 servers 1 before 0, 2, so that there is leader initially
 
-		Run $ python start_client.py <max_failure> <client_id> <num_commands>
+			Run $ python paxos_client.py 0 < testcase/test_contigent_addshard_0	
+			and
+			Run $ python paxos_client.py 1 < testcase/test_contigent_addshard_1
 
- 	2. To check chat_log, see 'server_<replica_id>.chat_log' under chat_log/
-
- 	3. Kill all python processes!
+			When client 0 is waiting for addShard1(in shard 1, no one receives 0's IAmLeader), another addShard2 request comes. This might cause the request right after addShard1 may time out, cleant's retry may end up being sent to a different shard, leading to duplicated execution
+		e. 
 
  - How we implement it:
 
- 	1. Failure detection: 
- 		a. Heartbeat: Every replica keeps a live set using heartbeat. Replica will braodcast "IAmLeader" message to all replicas 
- 						if it thinks it is the one with smallest replica_id	in its live set.
- 		b. Client timeout: When client timeouts on current leader, it will broadcast "ViewChange" message to all replicas.
- 							Upon receiving "ViewChange", replicas will check its live set and will campaign for the leader 
- 							if it is the one with smallest replica_id in its live set.
+ 	1. Scalability
+ 		We believe that scalability is a key feature of sharding, therefore we allow a shard to handle multiple requests from different clients.
+ 		Therefore, the original Paxos from project 1 was modified a little bit. The master node is not treated as a single client to the underlying Paxos, but a super client that forward client's request and handle view change or retry on requests for each shard.
+ 		This leads to the problem during adding shard, where a request can either still be in process on the old shard, or just lost during transmission. If the client retries, the master node can not distinguish if it should forward th e request to the old or new shard.
+	2. Addressing Add Shard
+		To address the above mentioned issue, we
